@@ -11,5 +11,17 @@ def main() -> None:
     return render_template('index.html')  # type: ignore
 
 
+@app.route('/about', methods=['GET']) # type: ignore
+def about() -> None:
+    """About page."""
+    return render_template('index.html')  # type: ignore
+
+
+@app.route('/portfolio', methods=['GET']) # type: ignore
+def portfolio() -> None:
+    """Portfolio page."""
+    return render_template('index.html')  # type: ignore
+
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)

@@ -1,9 +1,17 @@
 {% extends "layout.html" %}
 
 {% block content %}
-    <div class="row">
-        <div class="col">
-            <h2>Welcome to the Home Page</h2>
-        </div>
+<div class="row g-2">
+    <div class="col gy-5">
+        <h4>Welcome to my page!</h4>
     </div>
+</div>
+<div class="row g-2">
+    <div class="col-sm-2 gy-4">
+        Picture
+    </div>
+    <div class="col-lg-9 offset-sm-1 gy-4">
+        This is the home page of my Flask application.
+    </div>
+</div>
 {% endblock %}

@@ -141,3 +141,6 @@ cython_debug/
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/settings.json
+
+# Images
+/images/*

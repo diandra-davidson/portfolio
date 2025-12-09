@@ -143,4 +143,4 @@ cython_debug/
 !.vscode/settings.json
 
 # Images
-images/*
+static/images/*

@@ -15,23 +15,28 @@
         {% endblock %}
     </head>
     <body>
-        <div class="container">
+        <div class="container-md">
             <div class="row">
                 <div class="col gy-5">
                     <!-- Placeholder row -->
                 </div>
             </div>
             {% block nav %}
-            <nav class="navbar navbar-expand-lg navbar-light">
+            <nav class="navbar navbar-expand-sm navbar-light">
+                <div class="col-sm">
+                    <a class="navbar-brand" href="#">Diandra Davidson</a>
+                </div>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggler" aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <div class="col row align-items-end">
-                        <a class="navbar-brand" href="#">Diandra Davidson</a>
-                    </div>
-                    <div class="col-lg-6 row align-items-end">
+                    <div class="col-sm">
                         <!-- Additional nav items can go here -->
                     </div>
-                    <div class="col navbar-nav mr-auto">
-                        {% include 'nav.html' %}
+                    <div class="col-sm float-end">
+                        <div class="navbar-nav ms-auto float-end gx-5">
+                            {% include 'nav.html' %}
+                        </div>
                     </div>
                 </div>
             </nav>

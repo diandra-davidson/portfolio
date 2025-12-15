@@ -1,4 +1,23 @@
 <!doctype html>
+<style>
+    .landing-pg-text-col {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: start;
+        height: 500px;
+    }
+
+    .landing-pg-img-col {
+        display: flex;
+        margin-left: auto;
+        flex-direction: column;
+        justify-content: center;
+        float: inline-end;
+        text-align: start;
+        height: 600px;
+    }
+</style>
 <html lang="en">
     <head>
         {% block head %}
@@ -33,9 +52,11 @@
                     <div class="col-sm">
                         <!-- Additional nav items can go here -->
                     </div>
-                    <div class="col-sm float-end">
+                    <div class="col-sm-7 float-end">
                         <div class="navbar-nav ms-auto float-end gx-5">
+                            <ul class="nav nav-tabs">
                             {% include 'nav.html' %}
+                            </ul>
                         </div>
                     </div>
                 </div>

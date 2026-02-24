@@ -1,30 +1,4 @@
 <!doctype html>
-<style>
-    .landing-pg-text-col {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        text-align: start;
-        height: 500px;
-    }
-
-    .landing-pg-img-col {
-        display: flex;
-        margin-left: auto;
-        flex-direction: column;
-        justify-content: center;
-        float: inline-end;
-        text-align: start;
-        height: 600px;
-    }
-
-    .landing-pg-img-col img {
-        /* border: 0.7em solid lightgray; */
-        filter: drop-shadow(10px 10px 10px rgba(0, 0, 0, 0.5));
-        display: block;
-    }
-
-</style>
 <html lang="en">
     <head>
         {% block head %}
@@ -35,44 +9,33 @@
         {% block styles %}
             <!-- Bootstrap CSS -->
             {{ bootstrap.load_css() }}
+            <!-- Custom Portfolio Styling -->
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
         {% endblock %}
 
         <title>Diandra Davidson</title>
         {% endblock %}
     </head>
     <body>
-        <div class="container-md">
-            <div class="row">
-                <div class="col gy-5">
-                    <!-- Placeholder row -->
-                </div>
-            </div>
-            {% block nav %}
-            <nav class="navbar navbar-expand-sm navbar-light">
-                <div class="col-sm">
-                    <a class="navbar-brand" href="/">Diandra Davidson</a>
-                </div>
+        {% block nav %}
+        <nav class="navbar navbar-expand-sm navbar-dark sticky-top">
+            <div class="container-lg">
+                <a class="navbar-brand" href="/">Diandra Davidson</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggler" aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <div class="col-sm">
-                        <!-- Additional nav items can go here -->
-                    </div>
-                    <div class="col-sm-7 float-end">
-                        <div class="navbar-nav ms-auto float-end gx-5">
-                            <ul class="nav nav-tabs">
-                            {% include 'nav.html' %}
-                            </ul>
-                        </div>
+                <div class="collapse navbar-collapse" id="navbarToggler">
+                    <div class="navbar-nav ms-auto">
+                        {% include 'nav.html' %}
                     </div>
                 </div>
-            </nav>
-            {% endblock %}
-            {% block content %}
-                <!-- Main content goes here -->
-            {% endblock %}
-        </div>
+            </div>
+        </nav>
+        {% endblock %}
+        
+        {% block content %}
+            <!-- Main content goes here -->
+        {% endblock %}
             
         {% block scripts %}
             <!-- Optional JavaScript -->

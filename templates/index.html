@@ -2,41 +2,167 @@
 {% from 'bootstrap5/utils.html' import render_icon %}
 
 {% block content %}
-<div class="row g-10">
-    <div class="col-lg-7 gy-5 landing-pg-text-col">
-        <h1>Platform Engineer <small class="text-muted">(Identity and Reliability)</small></h1>
-        <p class="lead">Helping teams design and automate secure, reliable platform infrastructure in regulated environments.</p>
-        <p>
-            <!-- Button trigger modal -->
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#">
-                Contact Me
-            </button>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#">
-                Download Resume
-            </button>
-        </p>
-    </div>
-    <div class="col-sm-4 gy-5 landing-pg-img-col">  
-        <img src="{{ url_for('static', filename='images/20251216_173340_0001.svg') }}" class="img-fluid rounded-circle" alt="Profile Picture">
-        <span class="text-secondary fs-5 ps-2">
-            <p class="mt-3 icon-link">
-                <ul class="list-unstyled">
-                    <li>{{ render_icon('geo-alt') }} New York City / New Jersey</li>
-                    <li>{{ render_icon('terminal') }} Platform / SRE / IAM Specialist</li>
-                    <li>{{ render_icon('bag-dash') }} Full-time / Contract</li>
-                </ul>
-            </p>
-        </span>
-        <nav class="navbar navbar-expand-sm fs-4">
-            <div class="navbar-nav">
-                <a class="nav-link pr-10" href="https://www.linkedin.com/in/diandradavidson/" alt="LinkedIn Profile" target="_blank">{{ render_icon('linkedin') }}</a>
-                <a class="nav-link pr-10" href="https://github.com/diandra-davidson" alt="GitHub Profile" target="_blank">{{ render_icon('github') }}</a>
-                <a class="nav-link pr-10" href="mailto:user@email.com?subject=Platform%20Engineering%20Consulting%20Inquiry&body=Hi%20Diandra,%0D%0A%0D%0AI%E2%80%99m%20reaching%20out%20regarding%20potential%20platform%20engineering%20or%20consulting%20needs.%0D%0A%0D%0AI%20specialize%20in%20identity-centric%20platform%20engineering,%20automation,%20and%20production%20reliability%20in%20regulated%20environments.%20For%20contract%20engagements,%20I%20typically%20work%20at%20%2495%E2%80%93%24105/hr%20depending%20on%20scope%20and%20duration.%0D%0A%0D%0AIf%20this%20sounds%20relevant,%20I%E2%80%99d%20be%20happy%20to%20connect.%0D%0A%0D%0ABest,%0D%0A" 
-                    alt="Email Me">
-                    {{ render_icon('envelope-at-fill') }}
-                </a>
+<!-- Hero Section - Above the Fold -->
+<section class="hero-section">
+    <div class="container-lg w-100">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-7 gy-5 landing-pg-text-col">
+                <h1>Platform Engineer <small class="text-muted">(Identity and Reliability)</small></h1>
+                <p class="lead">Helping teams design and automate secure, reliable platform infrastructure in regulated environments.</p>
+                <p>
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#">
+                        Contact Me
+                    </button>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#">
+                        Download Resume
+                    </button>
+                </p>
             </div>
-        </nav>
+            <div class="col-lg-5 gy-5 landing-pg-img-col">  
+                <div class="honeycomb-container">
+                    <div class="honeycomb-border"></div>
+                    <img src="{{ url_for('static', filename='images/20251216_173340_0001.svg') }}" class="honeycomb-img" alt="Profile Picture">
+                </div>
+                <span class="text-secondary fs-5 ps-2">
+                    <p class="mt-3 icon-link">
+                        <ul class="list-unstyled">
+                            <li>{{ render_icon('geo-alt') }} New York City / New Jersey</li>
+                            <li>{{ render_icon('terminal') }} Platform / SRE / IAM Specialist</li>
+                            <li>{{ render_icon('bag-dash') }} Full-time / Contract</li>
+                        </ul>
+                    </p>
+                </span>
+                <nav class="navbar navbar-expand-sm fs-4">
+                    <div class="navbar-nav">
+                        <a class="nav-link pr-10" href="https://www.linkedin.com/in/diandradavidson/" alt="LinkedIn Profile" target="_blank">{{ render_icon('linkedin') }}</a>
+                        <a class="nav-link pr-10" href="https://github.com/diandra-davidson" alt="GitHub Profile" target="_blank">{{ render_icon('github') }}</a>
+                        <a class="nav-link pr-10" href="mailto:user@email.com?subject=Platform%20Engineering%20Consulting%20Inquiry&body=Hi%20Diandra,%0D%0A%0D%0AI%E2%80%99m%20reaching%20out%20regarding%20potential%20platform%20engineering%20or%20consulting%20needs.%0D%0A%0D%0AI%20specialize%20in%20identity-centric%20platform%20engineering,%20automation,%20and%20production%20reliability%20in%20regulated%20environments.%20For%20contract%20engagements,%20I%20typically%20work%20at%20%2495%E2%80%93%24105/hr%20depending%20on%20scope%20and%20duration.%0D%0A%0D%0AIf%20this%20sounds%20relevant,%20I%E2%80%99d%20be%20happy%20to%20connect.%0D%0A%0D%0ABest,%0D%0A" 
+                            alt="Email Me">
+                            {{ render_icon('envelope-at-fill') }}
+                        </a>
+                    </div>
+                </nav>
+            </div>
+        </div>
     </div>
-</div>
+    <!-- Scroll to Highlights Button -->
+    <div class="scroll-indicator">
+        <a href="#highlights" class="scroll-btn">
+            {{ render_icon('chevron-down') }}
+        </a>
+    </div>
+</section>
+
+<!-- Highlights Section - Below the Fold -->
+<section class="highlights-section" id="highlights">
+    <div class="container-lg">
+        <h2>Highlights</h2>
+        <p class="highlights-subtitle">Showcase of featured projects from my GitHub</p>
+        
+        <!-- Project Carousel -->
+        <div class="carousel-container">
+            <div id="projectCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+                <div class="carousel-indicators">
+                    <button type="button" data-bs-target="#projectCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Project 1"></button>
+                    <button type="button" data-bs-target="#projectCarousel" data-bs-slide-to="1" aria-label="Project 2"></button>
+                    <button type="button" data-bs-target="#projectCarousel" data-bs-slide-to="2" aria-label="Project 3"></button>
+                </div>
+                
+                <div class="carousel-inner">
+                    <!-- Project Card 1 -->
+                    <div class="carousel-item active" data-bs-interval="5000">
+                        <div class="project-card">
+                            <div class="project-card-header">
+                                <h3>Kubernetes Platform Automation</h3>
+                            </div>
+                            <div class="project-card-body">
+                                <p>Automated Kubernetes cluster provisioning and management infrastructure with GitOps workflows for multi-environment deployments.</p>
+                                <div class="project-tags">
+                                    <span class="project-tag">Kubernetes</span>
+                                    <span class="project-tag">GitOps</span>
+                                    <span class="project-tag">Infrastructure as Code</span>
+                                </div>
+                                <p><strong>Key Achievements:</strong></p>
+                                <ul>
+                                    <li>Reduced deployment time by 70%</li>
+                                    <li>Implemented 99.9% uptime SLA</li>
+                                </ul>
+                            </div>
+                            <div class="project-card-footer">
+                                <a href="https://github.com/diandra-davidson" target="_blank">
+                                    View Project {{ render_icon('arrow-right') }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project Card 2 -->
+                    <div class="carousel-item">
+                        <div class="project-card">
+                            <div class="project-card-header">
+                                <h3>Identity & Access Management Suite</h3>
+                            </div>
+                            <div class="project-card-body">
+                                <p>Enterprise-grade IAM solution with OIDC/SAML integration, role-based access control, and audit logging for compliance frameworks.</p>
+                                <div class="project-tags">
+                                    <span class="project-tag">IAM</span>
+                                    <span class="project-tag">Security</span>
+                                    <span class="project-tag">Python</span>
+                                </div>
+                                <p><strong>Key Achievements:</strong></p>
+                                <ul>
+                                    <li>Secured 50+ enterprise applications</li>
+                                    <li>Achieved SOC 2 Type II compliance</li>
+                                </ul>
+                            </div>
+                            <div class="project-card-footer">
+                                <a href="https://github.com/diandra-davidson" target="_blank">
+                                    View Project {{ render_icon('arrow-right') }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project Card 3 -->
+                    <div class="carousel-item">
+                        <div class="project-card">
+                            <div class="project-card-header">
+                                <h3>Production Reliability Engineering Framework</h3>
+                            </div>
+                            <div class="project-card-body">
+                                <p>Comprehensive SRE framework with monitoring, alerting, and incident management automation across hybrid cloud infrastructure.</p>
+                                <div class="project-tags">
+                                    <span class="project-tag">SRE</span>
+                                    <span class="project-tag">Monitoring</span>
+                                    <span class="project-tag">Go</span>
+                                </div>
+                                <p><strong>Key Achievements:</strong></p>
+                                <ul>
+                                    <li>Reduced MTTR by 60%</li>
+                                    <li>Automated incident resolution workflows</li>
+                                </ul>
+                            </div>
+                            <div class="project-card-footer">
+                                <a href="https://github.com/diandra-davidson" target="_blank">
+                                    View Project {{ render_icon('arrow-right') }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Carousel Controls -->
+                <button class="carousel-control-prev" type="button" data-bs-target="#projectCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#projectCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}

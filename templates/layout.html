@@ -9,37 +9,33 @@
         {% block styles %}
             <!-- Bootstrap CSS -->
             {{ bootstrap.load_css() }}
+            <!-- Custom Portfolio Styling -->
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
         {% endblock %}
 
-        <title>Your page title</title>
+        <title>Diandra Davidson</title>
         {% endblock %}
     </head>
     <body>
-        <div class="container">
-            <div class="row">
-                <div class="col gy-5">
-                    <!-- Placeholder row -->
-                </div>
-            </div>
-            {% block nav %}
-            <nav class="navbar navbar-expand-lg navbar-light">
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <div class="col row align-items-end">
-                        <a class="navbar-brand" href="#">Diandra Davidson</a>
-                    </div>
-                    <div class="col row align-items-end">
-                        <!-- Additional nav items can go here -->
-                    </div>
-                    <div class="navbar-nav mr-auto">
+        {% block nav %}
+        <nav class="navbar navbar-expand-sm navbar-dark sticky-top">
+            <div class="container-lg">
+                <a class="navbar-brand" href="/">Diandra Davidson</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggler" aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarToggler">
+                    <div class="navbar-nav ms-auto">
                         {% include 'nav.html' %}
                     </div>
                 </div>
-            </nav>
-            {% endblock %}
-            {% block content %}
-                <!-- Main content goes here -->
-            {% endblock %}
-        </div>
+            </div>
+        </nav>
+        {% endblock %}
+        
+        {% block content %}
+            <!-- Main content goes here -->
+        {% endblock %}
             
         {% block scripts %}
             <!-- Optional JavaScript -->

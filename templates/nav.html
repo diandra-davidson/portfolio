@@ -1,6 +1,8 @@
 {% from 'bootstrap5/nav.html' import render_nav_item %}
 
-
-{{ render_nav_item('main', 'Home') }}
-{{ render_nav_item('about', 'About') }}
-{{ render_nav_item('portfolio', 'Portfolio') }}
+<li class="nav-item">{{ render_nav_item('main', 'Home', _use_li=False) }}</li>
+<li class="nav-item">{{ render_nav_item('about', 'About', _use_li=False) }}</li>
+<li class="nav-item">{{ render_nav_item('services', 'Services', _use_li=False) }}</li>
+<li class="nav-item">{{ render_nav_item('experience', 'Experience', _use_li=False) }}</li>
+<li class="nav-item">{{ render_nav_item('portfolio', 'Portfolio', _use_li=False) }}</li>
+<li class="nav-item">{{ render_nav_item('contact', 'Contact', _use_li=False) }}</li>

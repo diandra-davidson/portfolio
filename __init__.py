@@ -1,5 +1,5 @@
 from flask import Flask
-from flask_bootstrap import Bootstrap5
+from flask_bootstrap import Bootstrap5 # type: ignore
 
 
 def create_app():

@@ -5,17 +5,16 @@ from flask import render_template
 from __init__ import app
 
 
-@app.route('/', methods=['GET']) # type: ignore
-def main() -> None:
+@app.route('/', methods=['GET'])
+def main() -> str:
     """Main function to run the application."""
-    return render_template('index.html')  # type: ignore
+    return render_template('index.html')
 
 
-@app.route('/about', methods=['GET']) # type: ignore
-def about() -> None:
+@app.route('/about', methods=['GET'])
+def about() -> str:
     """About page."""
     return render_template('about.html')  # type: ignore
-
 
 @app.route('/services', methods=['GET']) # type: ignore
 def services() -> None:
@@ -29,10 +28,28 @@ def experience() -> None:
     return render_template('index.html')  # type: ignore
 
 
-@app.route('/portfolio', methods=['GET']) # type: ignore
-def portfolio() -> None:
+@app.route('/services', methods=['GET'])
+def services() -> str:
+    """Services page."""
+    return render_template('index.html')
+
+
+@app.route('/experience', methods=['GET'])
+def experience() -> str:
+    """Work Experience page."""
+    return render_template('index.html')
+
+
+@app.route('/portfolio', methods=['GET'])
+def portfolio() -> str:
     """Portfolio page."""
-    return render_template('index.html')  # type: ignore
+    return render_template('index.html')
+
+
+@app.route('/contact', methods=['GET'])
+def contact() -> str:
+    """Contact page."""
+    return render_template('index.html')
 
 
 @app.route('/contact', methods=['GET']) # type: ignore

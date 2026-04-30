@@ -2,7 +2,6 @@
 Main entry point for the Python application.
 """
 from flask import render_template, Blueprint
-from __init__ import app
 
 
 bp = Blueprint("main", __name__)

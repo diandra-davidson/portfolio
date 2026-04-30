@@ -144,3 +144,6 @@ cython_debug/
 
 # Images
 static/images/*
+
+# AI Agents
+.github/*

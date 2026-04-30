@@ -3,7 +3,7 @@ from flask_bootstrap import Bootstrap5 # type: ignore
 
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, template_folder="templates")
 
     from .main import bp
     app.register_blueprint(bp)

@@ -19,7 +19,7 @@ def about() -> None:
     """About page."""
     return render_template('about.html')
 
-
+  
 @bp.get('/services')
 def services() -> None:
     """Services page."""

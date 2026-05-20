@@ -60,6 +60,39 @@ Add your Python dependencies to `requirements.txt` and install them using:
 python -m pip install -r requirements.txt
 ```
 
+## keyring-pass Setup
+
+If `keyring` falls back to `keyring.backends.fail.Keyring`, the `pass` CLI is usually missing or not initialized.
+
+1. Install system dependencies:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y pass gnupg
+```
+
+2. Install Python packages:
+
+```bash
+python -m pip install keyring keyring-pass
+```
+
+3. Create or use a GPG key and initialize `pass`:
+
+```bash
+gpg --full-generate-key
+gpg --list-secret-keys --keyid-format LONG
+pass init <YOUR_GPG_KEY_ID>
+```
+
+4. Verify backend discovery:
+
+```bash
+python -c "import keyring; print(keyring.get_keyring())"
+```
+
+Expected output should reference `keyring_pass.PasswordStoreBackend` (or another non-fail backend).
+
 ## License
 
 This project is open source and available under your chosen license.

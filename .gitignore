@@ -147,3 +147,12 @@ static/images/*
 
 # AI Agents
 .github/*
+
+# Secret files
+*.env
+*.secret
+secrets/*
+secret/*
+
+# Typing stubs
+typings/*

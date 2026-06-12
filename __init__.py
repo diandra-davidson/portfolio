@@ -15,6 +15,13 @@ KEYRING_SERVICE_NAME = os.getenv('KEYRING_SERVICE_NAME')
 KEYRING_USERNAME = os.getenv('KEYRING_USERNAME')
 CLIENT_SECRET_FILE = os.getenv('CLIENT_SECRET_FILE')
 FLASK_SECRET_KEY = os.getenv('FLASK_SECRET_KEY')
+CLIENT_ID = os.getenv('CLIENT_ID')
+SCOPE = os.getenv('SCOPE')
+AUTHORIZATION_URL = os.getenv('AUTHORIZATION_URL')
+TOKEN_URL = os.getenv('TOKEN_URL')
+CALLBACK_URL = os.getenv('CALLBACK_URL')
+CALLBACK_URL_DEV = os.getenv('CALLBACK_URL_DEV')
+CALLBACK_URL_PROD = os.getenv('CALLBACK_URL_PROD')
 
 
 def _get_docker_secret(secret_name: str) -> str:
@@ -52,6 +59,13 @@ def create_app():
     app = Flask(__name__, template_folder="templates")
     app.secret_key = _get_flask_secret_key()
     app.config["SECRET_KEY"] = app.secret_key
+    app.config["CLIENT_ID"] = CLIENT_ID
+    app.config["SCOPE"] = SCOPE
+    app.config["AUTHORIZATION_URL"] = AUTHORIZATION_URL
+    app.config["TOKEN_URL"] = TOKEN_URL
+    app.config["CALLBACK_URL"] = CALLBACK_URL
+    app.config["CALLBACK_URL_DEV"] = CALLBACK_URL_DEV
+    app.config["CALLBACK_URL_PROD"] = CALLBACK_URL_PROD
 
     client_secret = _get_client_secret()
     app.config["CLIENT_SECRET"] = client_secret

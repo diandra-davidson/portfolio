@@ -2,7 +2,6 @@
 Main entry point for the Python application.
 """
 import os
-import keyring
 import secrets
 import httpx
 from urllib.parse import urlparse
@@ -10,23 +9,32 @@ from flask import request, render_template, Blueprint, redirect, session, url_fo
 
 
 bp = Blueprint("main", __name__)
-CLIENT_ID = os.getenv('CLIENT_ID')
-SCOPE = os.getenv('SCOPE')
-AUTHORIZATION_URL = os.getenv('AUTHORIZATION_URL')
-CALLBACK_URL = os.getenv('CALLBACK_URL')
-KEYRING_SERVICE = os.getenv('KEYRING_SERVICE')
-KEYRING_USERNAME = os.getenv('KEYRING_USERNAME')
-TOKEN_URL = os.getenv('TOKEN_URL')
+OAUTH_CALLBACK_PATH = '/oauth/callback'
 
 
-def _get_callback_route() -> str:
-    """Return a valid route path for the OAuth callback endpoint."""
-    if not CALLBACK_URL:
-        return '/oauth/callback'
-    if CALLBACK_URL.startswith('/'):
-        return CALLBACK_URL
-    parsed = urlparse(CALLBACK_URL)
-    return parsed.path or '/oauth/callback'
+def _cfg(key: str) -> str | None:
+    """Return OAuth-related config value from app config, then environment."""
+    return current_app.config.get(key) or os.getenv(key)
+
+
+def _get_redirect_uri() -> str:
+    """Return absolute redirect URI used in both authorization and token steps."""
+    callback_url = _cfg('CALLBACK_URL')
+    callback_url_dev = _cfg('CALLBACK_URL_DEV')
+    callback_url_prod = _cfg('CALLBACK_URL_PROD')
+
+    # Explicit override wins in all environments.
+    if callback_url and not callback_url.startswith('/'):
+        return callback_url
+
+    # Choose a callback URL based on the active host when explicit CALLBACK_URL is absent.
+    host = request.host or ''
+    if 'github.dev' in host and callback_url_dev:
+        return callback_url_dev
+    if 'github.dev' not in host and callback_url_prod:
+        return callback_url_prod
+
+    return url_for('main.oauth_callback', _external=True)
 
 
 @bp.get('/') # type: ignore
@@ -67,49 +75,78 @@ async def contact() -> None:
 
 @bp.get('/fetch/github_metadata') # type: ignore
 async def fetch_github_metadata() -> None:
-    """OAuth callback endpoint."""
+    """Start GitHub OAuth flow and redirect user to authorization endpoint."""
+    client_id = _cfg('CLIENT_ID')
+    authorization_url = _cfg('AUTHORIZATION_URL')
+    token_url = _cfg('TOKEN_URL')
+    scope = _cfg('SCOPE')
+
+    if not client_id or not authorization_url or not token_url:
+        return ("OAuth configuration is incomplete on the server", 500) # type: ignore
+
     state = secrets.token_urlsafe(32)
     session['oauth_state'] = state
+    redirect_uri = _get_redirect_uri()
 
     params = {
-        'client_id': CLIENT_ID,
-        'redirect_uri': CALLBACK_URL,
-        'scope': SCOPE,
+        'client_id': client_id,
+        'redirect_uri': redirect_uri,
+        'scope': scope,
         'state': state
     }
 
-    auth_url = f"{AUTHORIZATION_URL}?{httpx.QueryParams(params)}"
+    auth_url = f"{authorization_url}?{httpx.QueryParams(params)}"
     return redirect(auth_url)
 
 
-@bp.get(_get_callback_route()) # type: ignore
+@bp.get(OAUTH_CALLBACK_PATH) # type: ignore
 async def oauth_callback() -> None:
-    """OAuth callback endpoint."""
-    # This function would handle the OAuth callback, exchange the code for an access token,
-    # and fetch the GitHub metadata. The implementation is omitted for brevity.
+    """Handle OAuth callback, exchange code, and fetch GitHub user metadata."""
+    client_id = _cfg('CLIENT_ID')
+    token_url = _cfg('TOKEN_URL')
+
+    if not client_id or not token_url:
+        return ("OAuth configuration is incomplete on the server", 500) # type: ignore
+
     code = request.args.get('code')
     state = request.args.get('state')
-    expected_state = session.get('oauth_state')
+    oauth_error = request.args.get('error')
+    oauth_error_description = request.args.get('error_description')
+    expected_state = session.pop('oauth_state', None)
+
+    if oauth_error:
+        return (f"OAuth error: {oauth_error}. {oauth_error_description or ''}".strip(), 400) # type: ignore
+
+    if not code:
+        return ("Missing OAuth authorization code", 400) # type: ignore
+
     if state != expected_state:
         return ("Invalid state parameter", 400) # type: ignore
-    redirect_uri = url_for('main.oauth_callback', _external=True)
+
+    redirect_uri = _get_redirect_uri()
 
     async with httpx.AsyncClient(timeout=10) as client:
         token_response = await client.post(
-            TOKEN_URL,
+            token_url,
             data={
-                'client_id': CLIENT_ID,
+                'client_id': client_id,
                 'client_secret': current_app.config['CLIENT_SECRET'],
                 'code': code,
                 'redirect_uri': redirect_uri
             },
             headers={'Accept': 'application/json'}
         )
-        token_response.raise_for_status()
-        access_token = token_response.json().get('access_token')
+
+        if token_response.is_error:
+            return (f"Token endpoint error {token_response.status_code}: {token_response.text}", 400) # type: ignore
+
+        token_payload = token_response.json()
+        access_token = token_payload.get('access_token')
 
         if not access_token:
-            return ("Failed to obtain access token", 400) # type: ignore
+            error = token_payload.get('error', 'unknown_error')
+            description = token_payload.get('error_description', 'No error description provided by GitHub')
+            return (f"Failed to obtain access token: {error}. {description}", 400) # type: ignore
 
         # Fetch GitHub metadata using the access token
         github_response = await client.get(

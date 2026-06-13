@@ -1,7 +1,3 @@
-secrets:
-  client_secret:
-    file: ./secrets/client_secret.txt
-
 networks:
   dev:
     name: portfolio_dev
@@ -11,13 +7,12 @@ services:
     image: portfolio:latest
     networks:
       - dev
-    secrets:
-      - client_secret
     env_file:
       - .env
     environment:
-      - CLIENT_SECRET_FILE=/run/secrets/client_secret
-      - CALLBACK_URL=https://scaling-computing-machine-g4665jxggqqfppjx-8000.app.github.dev/oauth/callback
+      AWS_REGION: ${AWS_REGION}
+      AWS_SECRETSMANAGER_SECRET_ID: ${AWS_SECRETSMANAGER_SECRET_ID}
+      AWS_SECRETSMANAGER_SECRET_KEY: ${AWS_SECRETSMANAGER_SECRET_KEY:-client_secret}
     volumes:
       - .:/app
     command: gunicorn "__init__:create_app()" --bind 0.0.0.0:8000 --reload --log-level debug

@@ -1,3 +1,5 @@
+import base64
+import json
 import os
 import secrets
 from dotenv import load_dotenv
@@ -13,7 +15,6 @@ load_dotenv()  # Load environment variables from .env file
 
 KEYRING_SERVICE_NAME = os.getenv('KEYRING_SERVICE_NAME')
 KEYRING_USERNAME = os.getenv('KEYRING_USERNAME')
-CLIENT_SECRET_FILE = os.getenv('CLIENT_SECRET_FILE')
 FLASK_SECRET_KEY = os.getenv('FLASK_SECRET_KEY')
 CLIENT_ID = os.getenv('CLIENT_ID')
 SCOPE = os.getenv('SCOPE')
@@ -42,16 +43,40 @@ def _get_flask_secret_key() -> str:
 
 
 def _get_client_secret() -> str:
-    """Resolve the GitHub client secret from env vars or Docker secrets."""
-    if os.getenv('CLIENT_SECRET'):
-        return os.environ['CLIENT_SECRET']
+    """Resolve the GitHub client secret from AWS Secrets Manager, file, or Docker secret."""
+    aws_secret_id = os.getenv('AWS_SECRETSMANAGER_SECRET_ID')
+    aws_secret_key = os.getenv('AWS_SECRETSMANAGER_SECRET_KEY', 'client_secret')
+    aws_region = os.getenv('AWS_REGION')
 
-    if CLIENT_SECRET_FILE:
-        client_secret_path = Path(CLIENT_SECRET_FILE)
-        if client_secret_path.exists():
-            return client_secret_path.read_text(encoding='utf-8').strip()
+    if aws_secret_id:
+        try:
+            import boto3  # type: ignore
+            client = boto3.client('secretsmanager', region_name=aws_region)
+            response = client.get_secret_value(SecretId=aws_secret_id)
+        except ImportError as exc:
+            raise RuntimeError('boto3 is required to fetch secrets from AWS Secrets Manager') from exc
+        except Exception as exc:
+            raise RuntimeError('Failed to fetch client secret from AWS Secrets Manager') from exc
 
-    return _get_docker_secret("client_secret")
+        secret_string = response.get('SecretString')
+        if secret_string is None:
+            secret_binary = response.get('SecretBinary')
+            if not secret_binary:
+                raise RuntimeError('AWS Secrets Manager response did not contain SecretString or SecretBinary')
+            secret_string = base64.b64decode(secret_binary).decode('utf-8')
+
+        try:
+            secret_payload = json.loads(secret_string)
+        except json.JSONDecodeError:
+            return secret_string.strip()
+
+        if isinstance(secret_payload, dict):
+            secret_value = secret_payload.get(aws_secret_key)
+            if not secret_value:
+                raise RuntimeError(f"AWS secret JSON missing '{aws_secret_key}' field")
+            return str(secret_value).strip()
+
+        return str(secret_payload).strip()
 
 
 def create_app():

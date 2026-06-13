@@ -23,7 +23,7 @@ check_health() {
     return
   fi
 
-  if [[ "$body" == "ok" || "$body" == "ok\n" ]]; then
+  if [[ "$body" == "ok" || "$body" == $'ok\n' ]]; then
     print_ok "NGINX health endpoint returned ok"
   else
     print_fail "NGINX health endpoint returned unexpected body: $body"

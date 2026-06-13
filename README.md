@@ -134,7 +134,10 @@ portfolio/
    ```bash
    # Create .env file with:
    CLIENT_ID=your_github_oauth_client_id
-   CLIENT_SECRET=your_github_oauth_secret
+   AWS_REGION=us-east-1
+   AWS_SECRETSMANAGER_SECRET_ID=portfolio/github/oauth
+   # Optional when secret value is JSON; defaults to 'client_secret'
+   AWS_SECRETSMANAGER_SECRET_KEY=client_secret
    SCOPE=read:user,repo
    AUTHORIZATION_URL=https://github.com/login/oauth/authorize
    CALLBACK_URL=http://localhost:8000/oauth/callback
@@ -177,12 +180,17 @@ portfolio/
    docker build -t portfolio:latest .
    ```
 
-2. **Set up secrets:**
-   ```bash
-   echo "your_github_oauth_secret" > secrets/client_secret.txt
-   ```
+2. **Store OAuth secret in AWS Secrets Manager**
+   - Secret value can be either:
+     - Plain string: the OAuth client secret
+     - JSON object with key `client_secret`
 
-3. **Configure environment variables** on Digital Ocean droplet
+3. **Configure host environment variables** on the Digital Ocean droplet (do not commit these):
+   ```bash
+   export AWS_REGION=us-east-1
+   export AWS_SECRETSMANAGER_SECRET_ID=portfolio/github/oauth
+   export AWS_SECRETSMANAGER_SECRET_KEY=client_secret
+   ```
 
 4. **Deploy with Docker Compose:**
    ```bash
@@ -195,7 +203,9 @@ portfolio/
 
 Required for production:
 - `CLIENT_ID`: GitHub OAuth App Client ID
-- `CLIENT_SECRET_FILE`: Path to Docker secret file
+- `AWS_REGION`: AWS region for Secrets Manager
+- `AWS_SECRETSMANAGER_SECRET_ID`: Secret identifier in AWS Secrets Manager
+- `AWS_SECRETSMANAGER_SECRET_KEY`: JSON key to read from secret payload (default: `client_secret`)
 - `SCOPE`: OAuth permissions (read:user,repo)
 - `AUTHORIZATION_URL`: GitHub OAuth URL
 - `CALLBACK_URL`: Your domain callback URL

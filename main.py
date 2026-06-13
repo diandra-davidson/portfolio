@@ -1,6 +1,7 @@
 """
 Main entry point for the Python application.
 """
+import logging
 import os
 import secrets
 import httpx
@@ -10,6 +11,7 @@ from flask import request, render_template, Blueprint, redirect, session, url_fo
 
 bp = Blueprint("main", __name__)
 OAUTH_CALLBACK_PATH = '/oauth/callback'
+LOGGER = logging.getLogger(__name__)
 
 
 def _cfg(key: str) -> str | None:
@@ -23,12 +25,16 @@ def _get_redirect_uri() -> str:
     callback_url_dev = _cfg('CALLBACK_URL_DEV')
     callback_url_prod = _cfg('CALLBACK_URL_PROD')
 
-    # Explicit override wins in all environments.
+    request_host = (request.host or '').split('@')[-1]
+
+    # Explicit override wins only when it matches the active request host.
     if callback_url and not callback_url.startswith('/'):
-        return callback_url
+        configured_host = urlparse(callback_url).netloc.split('@')[-1]
+        if configured_host == request_host:
+            return callback_url
 
     # Choose a callback URL based on the active host when explicit CALLBACK_URL is absent.
-    host = request.host or ''
+    host = request_host
     if 'github.dev' in host and callback_url_dev:
         return callback_url_dev
     if 'github.dev' not in host and callback_url_prod:
@@ -91,9 +97,11 @@ async def fetch_github_metadata() -> None:
     params = {
         'client_id': client_id,
         'redirect_uri': redirect_uri,
-        'scope': scope,
         'state': state
     }
+
+    if scope:
+        params['scope'] = scope
 
     auth_url = f"{authorization_url}?{httpx.QueryParams(params)}"
     return redirect(auth_url)
@@ -115,12 +123,20 @@ async def oauth_callback() -> None:
     expected_state = session.pop('oauth_state', None)
 
     if oauth_error:
-        return (f"OAuth error: {oauth_error}. {oauth_error_description or ''}".strip(), 400) # type: ignore
+        LOGGER.warning(
+            "OAuth callback returned error from provider",
+            extra={
+                "oauth_error": oauth_error,
+                "oauth_error_description": oauth_error_description,
+                "request_host": request.host,
+            },
+        )
+        return ("OAuth authorization failed", 400) # type: ignore
 
     if not code:
         return ("Missing OAuth authorization code", 400) # type: ignore
 
-    if state != expected_state:
+    if not state or not expected_state or state != expected_state:
         return ("Invalid state parameter", 400) # type: ignore
 
     redirect_uri = _get_redirect_uri()
@@ -138,7 +154,15 @@ async def oauth_callback() -> None:
         )
 
         if token_response.is_error:
-            return (f"Token endpoint error {token_response.status_code}: {token_response.text}", 400) # type: ignore
+            LOGGER.warning(
+                "Token endpoint returned an error",
+                extra={
+                    "status_code": token_response.status_code,
+                    "response_text": token_response.text,
+                    "request_host": request.host,
+                },
+            )
+            return ("Token exchange failed", 400) # type: ignore
 
         token_payload = token_response.json()
         access_token = token_payload.get('access_token')
@@ -146,7 +170,16 @@ async def oauth_callback() -> None:
         if not access_token:
             error = token_payload.get('error', 'unknown_error')
             description = token_payload.get('error_description', 'No error description provided by GitHub')
-            return (f"Failed to obtain access token: {error}. {description}", 400) # type: ignore
+            LOGGER.warning(
+                "Access token missing from token response",
+                extra={
+                    "error": error,
+                    "error_description": description,
+                    "response_payload": token_payload,
+                    "request_host": request.host,
+                },
+            )
+            return ("Token exchange failed", 400) # type: ignore
 
         # Fetch GitHub metadata using the access token
         github_response = await client.get(

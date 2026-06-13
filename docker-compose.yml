@@ -1,16 +1,10 @@
-secrets:
-  client_secret:
-    file: ./secrets/client_secret.txt
-
 services:
   app:
     image: portfolio:latest
-    secrets:
-      - client_secret
-    env_file:
-      - .env
     environment:
-      - CLIENT_SECRET_FILE=/run/secrets/client_secret
+      AWS_REGION: ${AWS_REGION:?set on host}
+      AWS_SECRETSMANAGER_SECRET_ID: ${AWS_SECRETSMANAGER_SECRET_ID:?set on host}
+      AWS_SECRETSMANAGER_SECRET_KEY: ${AWS_SECRETSMANAGER_SECRET_KEY:-client_secret}
     command: gunicorn "__init__:create_app()" --bind 0.0.0.0:8000
     ports:
       - "8000:8000"

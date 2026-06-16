@@ -57,9 +57,10 @@ check_oauth_redirect() {
   fi
 
   status_line="$(printf '%s\n' "$headers" | head -n 1 | tr -d '\r')"
+  status_code="$(printf '%s\n' "$status_line" | awk '{print $2}')"
   location="$(printf '%s\n' "$headers" | awk 'BEGIN{IGNORECASE=1} /^location:/{print $2}' | tr -d '\r')"
 
-  if [[ "$status_line" != *" 302 "* && "$status_line" != *" 301 "* ]]; then
+  if [[ "$status_code" != "302" && "$status_code" != "301" ]]; then
     print_fail "OAuth start did not redirect (status: $status_line)"
     return
   fi

@@ -86,6 +86,7 @@ def _get_client_secret() -> str:
         raise RuntimeError(f"AWS secret JSON missing '{aws_service_name}' field")
 
     secret_value = secret_value_obj.strip()
+
     if not secret_value:
         raise RuntimeError(f"AWS secret JSON missing '{aws_service_name}' field")
     return secret_value

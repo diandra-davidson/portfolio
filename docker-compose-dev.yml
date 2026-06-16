@@ -10,9 +10,16 @@ services:
     env_file:
       - .env
     environment:
-      AWS_REGION: ${AWS_REGION}
-      AWS_SECRETSMANAGER_SECRET_NAME: ${AWS_SECRETSMANAGER_SECRET_NAME}
+      AUTHORIZATION_BASE_URL: ${AUTHORIZATION_BASE_URL:?set on host}
+      AWS_REGION: ${AWS_REGION:?set on host}
+      AWS_SECRETSMANAGER_SECRET_NAME: ${AWS_SECRETSMANAGER_SECRET_NAME:?set on host}
       AWS_SECRETSMANAGER_SERVICE_NAME: ${AWS_SECRETSMANAGER_SERVICE_NAME:-client_secret}
+      CALLBACK_URL: ${CALLBACK_URL:?set on host}
+      CLIENT_ID: ${CLIENT_ID:?set on host}
+      COOKIE_SAME_SITE: ${COOKIE_SAMESITE:?set on host}
+      COOKIE_SECURE: ${COOKIE_SECURE:?set on host}
+      SCOPES: ${SCOPES:?set on host}
+      TOKEN_URL: ${TOKEN_URL:?set on host}
     volumes:
       - .:/app
     command: gunicorn "__init__:create_app()" --bind 0.0.0.0:8000 --reload --log-level debug

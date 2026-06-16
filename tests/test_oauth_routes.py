@@ -50,7 +50,7 @@ def _build_test_app(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Flask:
 
     monkeypatch.setenv("AWS_SECRETSMANAGER_SECRET_NAME", TEST_AWS_SECRET_ID)
     monkeypatch.setenv("AWS_SECRETSMANAGER_SERVICE_NAME", "client_secret")
-    monkeypatch.setenv("AWS_REGION", TEST_AWS_REGION)
+    monkeypatch.setenv("AWS_SECRETSMANAGER_REGION", TEST_AWS_REGION)
     monkeypatch.delenv("AWS_SECRETSMANAGER_FLASK_SECRET_NAME", raising=False)
     monkeypatch.delenv("AWS_SECRETSMANAGER_FLASK_SERVICE_NAME", raising=False)
     monkeypatch.delenv("AWS_SECRETSMANAGER_FLASK_REGION", raising=False)

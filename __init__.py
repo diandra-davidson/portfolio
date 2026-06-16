@@ -28,6 +28,20 @@ AWS_SECRETSMANAGER_FLASK_SECRET_NAME = os.getenv('AWS_SECRETSMANAGER_FLASK_SECRE
 AWS_SECRETSMANAGER_FLASK_REGION = os.getenv('AWS_SECRETSMANAGER_FLASK_REGION')
 
 
+def _resolve_payload_key(configured_key: str | None, default_key: str) -> str:
+    """Return a usable payload key for AWS secret JSON objects.
+
+    Historical configs sometimes set "secretsmanager" as a placeholder value.
+    Treat that value as unset and use the expected default payload key.
+    """
+    if not configured_key:
+        return default_key
+    normalized = configured_key.strip().lower()
+    if not normalized or normalized == 'secretsmanager':
+        return default_key
+    return configured_key.strip()
+
+
 def _get_secret_from_aws(secret_name: str, payload_key: str, aws_region: str) -> str:
     """Resolve a secret value from AWS Secrets Manager from plain or JSON payloads."""
     if not secret_name:
@@ -39,7 +53,8 @@ def _get_secret_from_aws(secret_name: str, payload_key: str, aws_region: str) ->
 
     try:
         import boto3  # type: ignore
-        client = boto3.client('secretsmanager', region_name=aws_region)  # type: ignore
+        session = boto3.session.Session() # type: ignore
+        client = session.client('secretsmanager', region_name=aws_region)  # type: ignore
         response = cast(dict[str, Any], client.get_secret_value(SecretId=secret_name))  # type: ignore
     except ImportError as exc:
         raise RuntimeError('boto3 is required to fetch secrets from AWS Secrets Manager') from exc
@@ -111,9 +126,10 @@ def _get_flask_secret_key() -> str:
             raise RuntimeError('AWS_SECRETSMANAGER_FLASK_SERVICE_NAME is required')
         if not flask_region:
             raise RuntimeError('AWS_SECRETSMANAGER_FLASK_REGION is required')
+        flask_payload_key = _resolve_payload_key(flask_service_name, 'flask_secret_key')
         return _get_secret_from_aws(
             flask_secret_name,
-            flask_service_name,
+            flask_payload_key,
             flask_region,
         )
 
@@ -123,7 +139,7 @@ def _get_flask_secret_key() -> str:
 def _get_client_secret() -> str:
     """Resolve GitHub OAuth client secret from AWS Secrets Manager."""
     secret_name = AWS_SECRETSMANAGER_SECRET_NAME
-    payload_key = AWS_SECRETSMANAGER_SERVICE_NAME or 'client_secret'
+    payload_key = _resolve_payload_key(AWS_SECRETSMANAGER_SERVICE_NAME, 'client_secret')
     region = AWS_SECRETSMANAGER_REGION
 
     if not secret_name:

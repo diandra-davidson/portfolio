@@ -1,3 +1,4 @@
 {
-    "workbench.list.openMode": "singleClick"
+    "workbench.list.openMode": "singleClick",
+    "python.terminal.useEnvFile": true
 }

@@ -1,0 +1,37 @@
+#!/bin/bash
+#
+# Post-commit Git Hook
+# Automatically updates development log after each commit
+#
+# Installation:
+#   ln -s ../../tools/git-hooks/post-commit .git/hooks/post-commit
+#   chmod +x .git/hooks/post-commit
+
+# Colors for output
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+echo -e "${BLUE}📝 Updating development log...${NC}"
+
+# Get commit information
+COMMIT_HASH=$(git rev-parse --short HEAD)
+COMMIT_MSG=$(git log -1 --pretty=%B)
+COMMIT_AUTHOR=$(git log -1 --pretty=%an)
+COMMIT_DATE=$(git log -1 --pretty=%aI)
+
+# Format date for the log
+LOG_DATE=$(date -d "$COMMIT_DATE" "+%B %d, %Y at %H:%M")
+
+# Append to development log
+cat >> "memories/repo/development-log.md" << EOF
+
+### Commit: $COMMIT_HASH
+**Date**: $LOG_DATE
+**Author**: $COMMIT_AUTHOR
+**Message**: $COMMIT_MSG
+
+EOF
+
+echo -e "${GREEN}✅ Development log updated with commit $COMMIT_HASH${NC}"
+echo -e "${BLUE}💡 Run 'python tools/track_changes.py summary' to see current status${NC}"

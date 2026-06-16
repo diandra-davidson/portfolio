@@ -211,12 +211,12 @@ portfolio/
    export AWS_ACCESS_KEY_ID=your_aws_access_key_id
    export AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
    export CLIENT_ID=your_github_oauth_client_id
+   export AWS_REGION=your_aws_region
    export AWS_SECRETSMANAGER_SECRET_NAME=portfolio/github/oauth
-   export AWS_SECRETSMANAGER_REGION=us-east-1
    export AWS_SECRETSMANAGER_SERVICE_NAME=client_secret
    export AWS_SECRETSMANAGER_FLASK_SECRET_NAME=prod/portfolio.diandrad.dev/flask_secret_key
    export AWS_SECRETSMANAGER_FLASK_SERVICE_NAME=secretsmanager
-   export AWS_SECRETSMANAGER_FLASK_REGION=us-east-1
+   export AWS_SECRETSMANAGER_FLASK_REGION=your_aws_region
    export SCOPE="read:user user:email"
    export AUTHORIZATION_URL=https://github.com/login/oauth/authorize
    export CALLBACK_URL=https://portfolio.diandrad.dev/oauth/callback

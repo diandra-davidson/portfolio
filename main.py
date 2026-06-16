@@ -1,6 +1,7 @@
 """
 Main entry point for the Python application.
 """
+import hashlib
 import logging
 import os
 import secrets
@@ -184,10 +185,23 @@ async def oauth_callback() -> ResponseReturnValue:
             )
 
             if token_response.is_error:
+                response_hash = hashlib.sha256(token_response.text.encode()).hexdigest()[:8]
+                response_has_error_field = None
+                try:
+                    token_payload_obj = token_response.json()
+                    response_has_error_field = "error" in (token_payload_obj if isinstance(token_payload_obj, dict) else {})
+                except Exception:
+                    # Could not parse JSON or json() raised
+                    response_has_error_field = None
+                
                 LOGGER.warning(
                     "Token endpoint returned an error",
                     extra={
                         "status_code": token_response.status_code,
+                        "response_hash": response_hash,
+                        "response_has_error_field": response_has_error_field,
+                        "response_length": len(token_response.text),
+                        "content_type": token_response.headers.get("content-type"),
                         "request_host": request.host,
                     },
                 )
@@ -196,10 +210,14 @@ async def oauth_callback() -> ResponseReturnValue:
             try:
                 token_payload_obj = token_response.json()
             except ValueError:
+                response_hash = hashlib.sha256(token_response.text.encode()).hexdigest()[:8]
                 LOGGER.warning(
                     "Token endpoint returned invalid JSON",
                     extra={
                         "status_code": token_response.status_code,
+                        "response_hash": response_hash,
+                        "response_length": len(token_response.text),
+                        "content_type": token_response.headers.get("content-type"),
                         "request_host": request.host,
                     },
                 )

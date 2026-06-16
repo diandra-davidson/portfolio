@@ -11,7 +11,7 @@ services:
       AWS_SECRETSMANAGER_FLASK_SERVICE_NAME: ${AWS_SECRETSMANAGER_FLASK_SERVICE_NAME:-flask_secret}
       CALLBACK_URL: ${CALLBACK_URL:?set on host}
       CLIENT_ID: ${CLIENT_ID:?set on host}
-      COOKIE_SAME_SITE: ${COOKIE_SAMESITE:?set on host}
+      COOKIE_SAMESITE: ${COOKIE_SAMESITE:?set on host}
       COOKIE_SECURE: ${COOKIE_SECURE:?set on host}
       SCOPE: ${SCOPE:?set on host}
       TOKEN_URL: ${TOKEN_URL:?set on host}

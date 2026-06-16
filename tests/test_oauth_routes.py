@@ -157,6 +157,7 @@ def test_callback_hides_non_2xx_token_endpoint_body(
         status_code = 400
         text = "<script>alert('xss')</script>"
         is_error = True
+        headers = {"content-type": "text/plain"}
 
         def json(self) -> Any:
             raise AssertionError("json() should not be called when token endpoint is non-2xx")
@@ -194,7 +195,8 @@ def test_callback_hides_non_2xx_token_endpoint_body(
     assert response.data == b"Token exchange failed"
     assert b"script" not in response.data
     assert any(record.getMessage() == "Token endpoint returned an error" for record in caplog.records)
-    assert any(getattr(record, "response_text", "") == "<script>alert('xss')</script>" for record in caplog.records)
+    assert any(getattr(record, "response_hash", "") for record in caplog.records)
+    assert any(getattr(record, "response_length", 0) > 0 for record in caplog.records)
 
 
 def test_callback_hides_missing_access_token_details(
@@ -313,6 +315,7 @@ def test_callback_hides_token_endpoint_body(
         status_code = 400
         text = "<script>alert('xss')</script>"
         is_error = True
+        headers = {"content-type": "text/plain"}
 
         def json(self) -> dict[str, str]:
             return {"error": "invalid_grant", "error_description": "<script>alert(1)</script>"}

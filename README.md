@@ -187,6 +187,9 @@ portfolio/
 
 3. **Configure host environment variables** on the Digital Ocean droplet (do not commit these):
    ```bash
+   export FLASK_SECRET_KEY=your_stable_flask_secret_key
+   export AWS_ACCESS_KEY_ID=your_aws_access_key_id
+   export AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
    export AWS_REGION=your_aws_region
    export AWS_SECRETSMANAGER_SECRET_NAME=portfolio/github/oauth
    export AWS_SECRETSMANAGER_SERVICE_NAME=client_secret

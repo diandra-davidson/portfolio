@@ -22,14 +22,5 @@ services:
       - ${HOME}/.aws:/root/.aws:ro
     command: gunicorn "__init__:create_app()" --bind 0.0.0.0:8000
     ports:
-      - "8000:8000"
-    restart: on-failure
-
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./static:/app/static:ro
+      - "127.0.0.1:8000:8000"
     restart: on-failure

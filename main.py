@@ -54,15 +54,15 @@ def _get_redirect_uri() -> str:
     callback_url_dev_host = _url_host(callback_url_dev)
     callback_url_prod_host = _url_host(callback_url_prod)
 
-    if request_host and callback_url_dev and request_host == callback_url_dev_host:
+    if request_host and callback_url_dev and request_host == callback_url_dev_host and not callback_url_dev.startswith('/'):
         return callback_url_dev
-    if request_host and callback_url_prod and request_host == callback_url_prod_host:
+    if request_host and callback_url_prod and request_host == callback_url_prod_host and not callback_url_prod.startswith('/'):
         return callback_url_prod
 
     # For unrecognized hosts, do not trust host header to choose environment.
-    if callback_url_prod:
+    if callback_url_prod and not callback_url_prod.startswith('/'):
         return callback_url_prod
-    if callback_url_dev:
+    if callback_url_dev and not callback_url_dev.startswith('/'):
         return callback_url_dev
 
     return url_for('main.oauth_callback', _external=True)

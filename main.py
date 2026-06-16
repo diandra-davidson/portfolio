@@ -29,7 +29,8 @@ def _normalized_host(value: str | None) -> str | None:
     """Return normalized host without userinfo/port, or None when unavailable."""
     if not value:
         return None
-    host = value.split('@')[-1].split(':')[0].strip().lower()
+    parsed = urlparse(f"//{value}")
+    host = parsed.hostname.lower() if parsed.hostname else None
     return host or None
 
 

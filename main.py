@@ -5,8 +5,10 @@ import logging
 import os
 import secrets
 import httpx
+from typing import Any, cast
 from urllib.parse import urlparse
 from flask import request, render_template, Blueprint, redirect, session, url_for, current_app
+from flask.typing import ResponseReturnValue
 
 
 bp = Blueprint("main", __name__)
@@ -16,7 +18,11 @@ LOGGER = logging.getLogger(__name__)
 
 def _cfg(key: str) -> str | None:
     """Return OAuth-related config value from app config, then environment."""
-    return current_app.config.get(key) or os.getenv(key)
+    config = cast(dict[str, Any], current_app.config)
+    config_value = config.get(key)
+    if isinstance(config_value, str) and config_value:
+        return config_value
+    return os.getenv(key)
 
 
 def _get_redirect_uri() -> str:
@@ -44,43 +50,43 @@ def _get_redirect_uri() -> str:
 
 
 @bp.get('/') # type: ignore
-async def main() -> None:
+async def main() -> ResponseReturnValue:
     """Main function to run the application."""
     return render_template('index.html') # type: ignore
 
 
 @bp.get('/about') # type: ignore
-async def about() -> None:
+async def about() -> ResponseReturnValue:
     """About page."""
     return render_template('about.html') # type: ignore
 
   
 @bp.get('/services') # type: ignore
-async def services() -> None:
+async def services() -> ResponseReturnValue:
     """Services page."""
     return render_template('index.html') # type: ignore
 
 
 @bp.get('/experience') # type: ignore
-async def experience() -> None:
+async def experience() -> ResponseReturnValue:
     """Work Experience page."""
     return render_template('index.html') # type: ignore
 
 
 @bp.get('/portfolio') # type: ignore
-async def portfolio() -> None:
+async def portfolio() -> ResponseReturnValue:
     """Portfolio page."""
     return render_template('index.html') # type: ignore
 
 
 @bp.get('/contact') # type: ignore
-async def contact() -> None:
+async def contact() -> ResponseReturnValue:
     """Contact page."""
     return render_template('index.html') # type: ignore
 
 
 @bp.get('/fetch/github_metadata') # type: ignore
-async def fetch_github_metadata() -> None:
+async def fetch_github_metadata() -> ResponseReturnValue:
     """Start GitHub OAuth flow and redirect user to authorization endpoint."""
     client_id = _cfg('CLIENT_ID')
     authorization_url = _cfg('AUTHORIZATION_URL')
@@ -108,7 +114,7 @@ async def fetch_github_metadata() -> None:
 
 
 @bp.get(OAUTH_CALLBACK_PATH) # type: ignore
-async def oauth_callback() -> None:
+async def oauth_callback() -> ResponseReturnValue:
     """Handle OAuth callback, exchange code, and fetch GitHub user metadata."""
     client_id = _cfg('CLIENT_ID')
     token_url = _cfg('TOKEN_URL')
@@ -163,9 +169,9 @@ async def oauth_callback() -> None:
                 },
             )
             return ("Token exchange failed", 400) # type: ignore
-
-        token_payload = token_response.json()
-        access_token = token_payload.get('access_token')
+        else:
+            token_payload = token_response.json()
+            access_token = token_payload.get('access_token')
 
         if not access_token:
             error = token_payload.get('error', 'unknown_error')

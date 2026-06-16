@@ -2,9 +2,9 @@ import base64
 import json
 import os
 import secrets
+from typing import Any, cast
 from dotenv import load_dotenv
 from flask import Flask
-from pathlib import Path
 
 from flask_bootstrap import Bootstrap5 # type: ignore
 
@@ -13,8 +13,6 @@ bootstrap = Bootstrap5() # type: ignore
 load_dotenv()  # Load environment variables from .env file
 
 
-KEYRING_SERVICE_NAME = os.getenv('KEYRING_SERVICE_NAME')
-KEYRING_USERNAME = os.getenv('KEYRING_USERNAME')
 FLASK_SECRET_KEY = os.getenv('FLASK_SECRET_KEY')
 CLIENT_ID = os.getenv('CLIENT_ID')
 SCOPE = os.getenv('SCOPE')
@@ -25,16 +23,6 @@ CALLBACK_URL_DEV = os.getenv('CALLBACK_URL_DEV')
 CALLBACK_URL_PROD = os.getenv('CALLBACK_URL_PROD')
 
 
-def _get_docker_secret(secret_name: str) -> str:
-    """Read a Docker secret from /run/secrets/"""
-    secret_path = f"/run/secrets/{secret_name}"
-    try:
-        with open(secret_path, 'r', encoding='utf-8') as f:
-            return f.read().strip()
-    except FileNotFoundError:
-        raise RuntimeError(f"Docker secret '{secret_name}' not found at {secret_path}")
-
-
 def _get_flask_secret_key() -> str:
     """Resolve Flask session secret with a safe fallback for development."""
     if FLASK_SECRET_KEY:
@@ -43,43 +31,63 @@ def _get_flask_secret_key() -> str:
 
 
 def _get_client_secret() -> str:
-    """Resolve the GitHub client secret from AWS Secrets Manager, file, or Docker secret."""
+    """Resolve the GitHub client secret from AWS Secrets Manager."""
     aws_secret_id = os.getenv('AWS_SECRETSMANAGER_SECRET_ID')
-    aws_secret_key = os.getenv('AWS_SECRETSMANAGER_SECRET_KEY', 'client_secret')
+    aws_secret_key = os.getenv('AWS_SECRETSMANAGER_SECRET_KEY', 
+                               'client_secret')
     aws_region = os.getenv('AWS_REGION')
 
-    if aws_secret_id:
-        try:
-            import boto3  # type: ignore
-            client = boto3.client('secretsmanager', region_name=aws_region)
-            response = client.get_secret_value(SecretId=aws_secret_id)
-        except ImportError as exc:
-            raise RuntimeError('boto3 is required to fetch secrets from AWS Secrets Manager') from exc
-        except Exception as exc:
-            raise RuntimeError('Failed to fetch client secret from AWS Secrets Manager') from exc
+    if not aws_secret_id:
+        raise RuntimeError('AWS_SECRETSMANAGER_SECRET_ID is required')
 
-        secret_string = response.get('SecretString')
-        if secret_string is None:
-            secret_binary = response.get('SecretBinary')
-            if not secret_binary:
-                raise RuntimeError('AWS Secrets Manager response did not contain SecretString or SecretBinary')
-            secret_string = base64.b64decode(secret_binary).decode('utf-8')
+    try:
+        import boto3  # type: ignore
+        client = boto3.client('secretsmanager', region_name=aws_region)  # type: ignore
+        response = cast(dict[str, Any], client.get_secret_value(SecretId=aws_secret_id))  # type: ignore
+    except ImportError as exc:
+        raise RuntimeError('boto3 is required to fetch secrets from AWS Secrets Manager') from exc
+    except Exception as exc:
+        raise RuntimeError('Failed to fetch client secret from AWS Secrets Manager') from exc
 
-        try:
-            secret_payload = json.loads(secret_string)
-        except json.JSONDecodeError:
-            return secret_string.strip()
+    secret_string_obj = response.get('SecretString')
+    if isinstance(secret_string_obj, str):
+        secret_string = secret_string_obj
+    else:
+        secret_binary_obj = response.get('SecretBinary')
+        if not secret_binary_obj:
+            raise RuntimeError('AWS Secrets Manager response did not contain SecretString or SecretBinary')
+        if isinstance(secret_binary_obj, str):
+            secret_binary = secret_binary_obj.encode('utf-8')
+        elif isinstance(secret_binary_obj, (bytes, bytearray)):
+            secret_binary = bytes(secret_binary_obj)
+        else:
+            raise RuntimeError('AWS Secrets Manager returned unsupported SecretBinary type')
+        secret_string = base64.b64decode(secret_binary).decode('utf-8')
 
-        if isinstance(secret_payload, dict):
-            secret_value = secret_payload.get(aws_secret_key)
-            if not secret_value:
-                raise RuntimeError(f"AWS secret JSON missing '{aws_secret_key}' field")
-            return str(secret_value).strip()
+    try:
+        secret_payload = json.loads(secret_string)
+    except json.JSONDecodeError:
+        stripped = secret_string.strip()
+        if not stripped:
+            raise RuntimeError('AWS secret value is empty')
+        return stripped
 
-        return str(secret_payload).strip()
+    if not isinstance(secret_payload, dict):
+        raise RuntimeError('AWS secret JSON must be an object')
+
+    typed_payload = cast(dict[str, Any], secret_payload)
+
+    secret_value_obj = typed_payload.get(aws_secret_key)
+    if not isinstance(secret_value_obj, str):
+        raise RuntimeError(f"AWS secret JSON missing '{aws_secret_key}' field")
+
+    secret_value = secret_value_obj.strip()
+    if not secret_value:
+        raise RuntimeError(f"AWS secret JSON missing '{aws_secret_key}' field")
+    return secret_value
 
 
-def create_app():
+def create_app() -> Flask:
     """Create and configure the Flask application."""
     app = Flask(__name__, template_folder="templates")
     app.secret_key = _get_flask_secret_key()

@@ -13,7 +13,6 @@ from flask.typing import ResponseReturnValue
 
 
 bp = Blueprint("main", __name__)
-OAUTH_CALLBACK_PATH = '/oauth/callback'
 LOGGER = logging.getLogger(__name__)
 
 
@@ -134,7 +133,7 @@ async def fetch_github_metadata() -> ResponseReturnValue:
     return redirect(auth_url)
 
 
-@bp.get(OAUTH_CALLBACK_PATH) # type: ignore
+@bp.get('/oauth/callback') # type: ignore
 async def oauth_callback() -> ResponseReturnValue:
     """Handle OAuth callback, exchange code, and fetch GitHub user metadata."""
     client_id = _cfg('CLIENT_ID')
@@ -161,7 +160,7 @@ async def oauth_callback() -> ResponseReturnValue:
             extra={
                 "oauth_error": oauth_error,
                 "oauth_error_description": oauth_error_description,
-                "request_host": request.host,
+                "request_host": request.host
             },
         )
         return ("OAuth authorization failed", 400) # type: ignore
@@ -187,17 +186,15 @@ async def oauth_callback() -> ResponseReturnValue:
             if token_response.is_error:
                 response_hash = hashlib.sha256(token_response.text.encode()).hexdigest()[:8]
                 # Avoid parsing the body on non-2xx responses to prevent accidental processing of untrusted payloads.
-                response_has_error_field = None
                 
                 LOGGER.warning(
                     "Token endpoint returned an error",
                     extra={
                         "status_code": token_response.status_code,
                         "response_hash": response_hash,
-                        "response_has_error_field": response_has_error_field,
                         "response_length": len(token_response.text),
                         "content_type": token_response.headers.get("content-type"),
-                        "request_host": request.host,
+                        "request_host": request.host
                     },
                 )
                 return ("Token exchange failed", 400) # type: ignore
@@ -213,7 +210,7 @@ async def oauth_callback() -> ResponseReturnValue:
                         "response_hash": response_hash,
                         "response_length": len(token_response.text),
                         "content_type": token_response.headers.get("content-type"),
-                        "request_host": request.host,
+                        "request_host": request.host
                     },
                 )
                 return ("Token exchange failed", 502) # type: ignore
@@ -223,7 +220,7 @@ async def oauth_callback() -> ResponseReturnValue:
                     "Token endpoint returned unexpected payload type",
                     extra={
                         "payload_type": type(token_payload_obj).__name__,
-                        "request_host": request.host,
+                        "request_host": request.host
                     },
                 )
                 return ("Token exchange failed", 502) # type: ignore
@@ -240,8 +237,8 @@ async def oauth_callback() -> ResponseReturnValue:
                     extra={
                         "error": error,
                         "error_description": description,
-                        "response_payload": token_payload,
-                        "request_host": request.host,
+                        "response_keys": list(token_payload.keys()),
+                        "request_host": request.host
                     },
                 )
                 return ("Token exchange failed", 400) # type: ignore
@@ -260,7 +257,7 @@ async def oauth_callback() -> ResponseReturnValue:
                     "GitHub user endpoint returned invalid JSON",
                     extra={
                         "status_code": github_response.status_code,
-                        "request_host": request.host,
+                        "request_host": request.host
                     },
                 )
                 return ("Failed to fetch GitHub metadata", 502) # type: ignore
@@ -270,7 +267,7 @@ async def oauth_callback() -> ResponseReturnValue:
                     "GitHub user endpoint returned unexpected payload type",
                     extra={
                         "payload_type": type(github_user_metadata_obj).__name__,
-                        "request_host": request.host,
+                        "request_host": request.host
                     },
                 )
                 return ("Failed to fetch GitHub metadata", 502) # type: ignore

@@ -16,13 +16,10 @@ services:
       AWS_SECRETSMANAGER_FLASK_SERVICE_NAME: ${AWS_SECRETSMANAGER_FLASK_SERVICE_NAME:?set on host}
       CALLBACK_URL: ${CALLBACK_URL:?set on host}
       CLIENT_ID: ${CLIENT_ID:?set on host}
-      COOKIE_SAMESITE: ${COOKIE_SAMESITE:?set on host}
-      COOKIE_SECURE: ${COOKIE_SECURE:?set on host}
-      SCOPE: ${SCOPE:?set on host}
+      SCOPE: ${SCOPE:-read:user user:email}
       TOKEN_URL: ${TOKEN_URL:?set on host}
     volumes:
       - ${HOME}/.aws:/root/.aws:ro
-      - .:/app
     command: gunicorn "__init__:create_app()" --bind 0.0.0.0:8000
     ports:
       - "8000:8000"

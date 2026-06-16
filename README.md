@@ -59,7 +59,7 @@ The AI assistant:
 - **OAuth state tokens** for CSRF protection (validated first before any provider processing)
 - **Host normalization** for safe redirect URI selection (prevents host-header injection)
 - **Upstream error handling** (502 responses for httpx/JSON failures, prevents information leakage)
-- **Validated configuration** (all required values checked before app startup)
+- **Validated configuration** (required OAuth values are checked before starting the OAuth flow and during callback handling)
 - Environment variable configuration with fallback patterns
 
 ## 📁 Project Structure
@@ -137,7 +137,7 @@ portfolio/
    # Create .env file with:
    FLASK_SECRET_KEY=your_long_random_flask_secret_key
    CLIENT_ID=your_github_oauth_client_id
-   AWS_REGION=your_aws_region
+   AWS_SECRETSMANAGER_REGION=your_aws_region
    AWS_SECRETSMANAGER_SECRET_NAME=your_aws_secret_name
    AWS_SECRETSMANAGER_SERVICE_NAME=client_secret
    SCOPE="read:user user:email"
@@ -154,7 +154,7 @@ portfolio/
    AWS_SECRETSMANAGER_SERVICE_NAME=client_secret
    AWS_SECRETSMANAGER_REGION=your_aws_region
    AWS_SECRETSMANAGER_FLASK_SECRET_NAME=your_flask_secret_id
-   AWS_SECRETSMANAGER_FLASK_SERVICE_NAME=secretsmanager
+   AWS_SECRETSMANAGER_FLASK_SERVICE_NAME=flask_secret_key
    AWS_SECRETSMANAGER_FLASK_REGION=your_aws_region
    SCOPE="read:user user:email"
    AUTHORIZATION_URL=https://github.com/login/oauth/authorize
@@ -211,11 +211,11 @@ portfolio/
    export AWS_ACCESS_KEY_ID=your_aws_access_key_id
    export AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
    export CLIENT_ID=your_github_oauth_client_id
-   export AWS_REGION=your_aws_region
+   export AWS_SECRETSMANAGER_REGION=your_aws_region
    export AWS_SECRETSMANAGER_SECRET_NAME=portfolio/github/oauth
    export AWS_SECRETSMANAGER_SERVICE_NAME=client_secret
    export AWS_SECRETSMANAGER_FLASK_SECRET_NAME=prod/portfolio.diandrad.dev/flask_secret_key
-   export AWS_SECRETSMANAGER_FLASK_SERVICE_NAME=secretsmanager
+   export AWS_SECRETSMANAGER_FLASK_SERVICE_NAME=flask_secret_key
    export AWS_SECRETSMANAGER_FLASK_REGION=your_aws_region
    export SCOPE="read:user user:email"
    export AUTHORIZATION_URL=https://github.com/login/oauth/authorize
@@ -237,7 +237,7 @@ portfolio/
 - `AWS_SECRETSMANAGER_SECRET_NAME`: AWS Secrets Manager ID for GitHub OAuth secret
 - `AWS_SECRETSMANAGER_REGION`: AWS region for GitHub secrets
 - `AWS_SECRETSMANAGER_SERVICE_NAME`: JSON field name in GitHub secret (default: `client_secret`)
-- `SCOPE`: OAuth permissions (default: `read:user user:email`)
+- `SCOPE`: OAuth permissions (optional: `read:user user:email`)
 - `AUTHORIZATION_URL`: GitHub OAuth authorization endpoint
 - `TOKEN_URL`: GitHub token exchange endpoint
 - `CALLBACK_URL`: OAuth callback URL (e.g., `https://yourdomain.com/oauth/callback`)
@@ -246,7 +246,7 @@ portfolio/
 - `FLASK_SECRET_KEY`: Explicit Flask secret key (overrides AWS)
 - **OR** all three of:
   - `AWS_SECRETSMANAGER_FLASK_SECRET_NAME`: AWS Secrets Manager ID for Flask secret
-  - `AWS_SECRETSMANAGER_FLASK_SERVICE_NAME`: JSON field name in Flask secret (default: `secretsmanager`)
+  - `AWS_SECRETSMANAGER_FLASK_SERVICE_NAME`: JSON field name in Flask secret (default: `flask_secret_key`)
   - `AWS_SECRETSMANAGER_FLASK_REGION`: AWS region for Flask secret
 
 **Optional:**

@@ -36,8 +36,15 @@ def _mock_aws_secret(
         assert region_name == expected_region
         return FakeSecretsManagerClient()
 
-    monkeypatch.setitem(sys.modules, "boto3", type("FakeBoto3", (), {"client": staticmethod(fake_boto3_client)}))
+    class FakeSession:
+        def client(self, service_name: str, region_name: str | None = None) -> FakeSecretsManagerClient:
+            return fake_boto3_client(service_name, region_name)
+         
+    class FakeBoto3:
+        class session:
+            Session = FakeSession
 
+    monkeypatch.setitem(sys.modules, "boto3", FakeBoto3)
 
 def _build_test_app(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Flask:
     _ = tmp_path

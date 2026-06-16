@@ -130,6 +130,7 @@ portfolio/
 3. **Set up environment variables:**
    ```bash
    # Create .env file with:
+   FLASK_SECRET_KEY=your_long_random_flask_secret_key
    CLIENT_ID=your_github_oauth_client_id
    AWS_REGION=your_aws_region
    AWS_SECRETSMANAGER_SECRET_NAME=your_aws_secret_name
@@ -139,6 +140,11 @@ portfolio/
    CALLBACK_URL=http://localhost:8000/oauth/callback
    TOKEN_URL=https://github.com/login/oauth/access_token
    ```
+
+   Notes:
+   - If `FLASK_SECRET_KEY` is not set, the app generates a random key at startup.
+   - A generated key is acceptable for local testing, but sessions and OAuth state cookies become invalid when the process restarts.
+   - Set `FLASK_SECRET_KEY` explicitly for stable sessions, especially in production.
 
 4. **Run development server:**
    ```bash
@@ -196,6 +202,7 @@ portfolio/
 ### Environment Variables
 
 Required for production:
+- `FLASK_SECRET_KEY`: stable secret for Flask session and CSRF state cookies
 - `CLIENT_ID`: GitHub OAuth App Client ID
 - `AWS_REGION`: your_aws_region
 - `AWS_SECRETSMANAGER_SECRET_NAME`: your_aws_secret_name

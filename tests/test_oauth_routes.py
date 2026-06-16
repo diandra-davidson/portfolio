@@ -51,6 +51,18 @@ def _build_test_app(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Flask:
     monkeypatch.setenv("AWS_SECRETSMANAGER_SECRET_NAME", TEST_AWS_SECRET_ID)
     monkeypatch.setenv("AWS_SECRETSMANAGER_SERVICE_NAME", "client_secret")
     monkeypatch.setenv("AWS_REGION", TEST_AWS_REGION)
+    monkeypatch.delenv("AWS_SECRETSMANAGER_FLASK_SECRET_NAME", raising=False)
+    monkeypatch.delenv("AWS_SECRETSMANAGER_FLASK_SERVICE_NAME", raising=False)
+    monkeypatch.delenv("AWS_SECRETSMANAGER_FLASK_REGION", raising=False)
+
+    # __init__.py reads these values at import time, so patch module constants too.
+    monkeypatch.setattr(app_init, "AWS_SECRETSMANAGER_SECRET_NAME", TEST_AWS_SECRET_ID)
+    monkeypatch.setattr(app_init, "AWS_SECRETSMANAGER_SERVICE_NAME", "client_secret")
+    monkeypatch.setattr(app_init, "AWS_SECRETSMANAGER_REGION", TEST_AWS_REGION)
+    monkeypatch.setattr(app_init, "AWS_SECRETSMANAGER_FLASK_SECRET_NAME", None)
+    monkeypatch.setattr(app_init, "AWS_SECRETSMANAGER_FLASK_SERVICE_NAME", None)
+    monkeypatch.setattr(app_init, "AWS_SECRETSMANAGER_FLASK_REGION", None)
+
     monkeypatch.delenv("CALLBACK_URL", raising=False)
     monkeypatch.delenv("CALLBACK_URL_DEV", raising=False)
     monkeypatch.delenv("CALLBACK_URL_PROD", raising=False)

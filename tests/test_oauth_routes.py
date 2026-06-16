@@ -51,6 +51,9 @@ def _build_test_app(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Flask:
     monkeypatch.setenv("AWS_SECRETSMANAGER_SECRET_ID", TEST_AWS_SECRET_ID)
     monkeypatch.setenv("AWS_SECRETSMANAGER_SECRET_KEY", "client_secret")
     monkeypatch.setenv("AWS_REGION", TEST_AWS_REGION)
+    monkeypatch.delenv("CALLBACK_URL", raising=False)
+    monkeypatch.delenv("CALLBACK_URL_DEV", raising=False)
+    monkeypatch.delenv("CALLBACK_URL_PROD", raising=False)
     monkeypatch.delenv("CLIENT_SECRET", raising=False)
     monkeypatch.delenv("CLIENT_SECRET_FILE", raising=False)
 

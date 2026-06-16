@@ -186,13 +186,8 @@ async def oauth_callback() -> ResponseReturnValue:
 
             if token_response.is_error:
                 response_hash = hashlib.sha256(token_response.text.encode()).hexdigest()[:8]
+                # Avoid parsing the body on non-2xx responses to prevent accidental processing of untrusted payloads.
                 response_has_error_field = None
-                try:
-                    token_payload_obj = token_response.json()
-                    response_has_error_field = "error" in (token_payload_obj if isinstance(token_payload_obj, dict) else {})
-                except Exception:
-                    # Could not parse JSON or json() raised
-                    response_has_error_field = None
                 
                 LOGGER.warning(
                     "Token endpoint returned an error",

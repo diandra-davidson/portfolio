@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4 p-lg-5">
+                    <h1 class="h3 mb-3">GitHub Metadata Connected</h1>
+                    <p class="text-muted mb-4">The OAuth callback completed successfully and returned your GitHub profile data.</p>
+
+                    <dl class="row mb-4">
+                        <dt class="col-sm-3">Username</dt>
+                        <dd class="col-sm-9">{{ username or "Not available" }}</dd>
+
+                        <dt class="col-sm-3">Email</dt>
+                        <dd class="col-sm-9">{{ email or "Not public" }}</dd>
+                    </dl>
+
+                    <h2 class="h5 mb-3">Raw Response</h2>
+                    <pre class="bg-light border rounded p-3 mb-0" style="white-space: pre-wrap; word-break: break-word;">{{ data | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

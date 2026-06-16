@@ -32,18 +32,22 @@ def _get_flask_secret_key() -> str:
 
 def _get_client_secret() -> str:
     """Resolve the GitHub client secret from AWS Secrets Manager."""
-    aws_secret_id = os.getenv('AWS_SECRETSMANAGER_SECRET_ID')
-    aws_secret_key = os.getenv('AWS_SECRETSMANAGER_SECRET_KEY', 
+    aws_secret_name = os.getenv('AWS_SECRETSMANAGER_SECRET_NAME')
+    aws_service_name = os.getenv('AWS_SECRETSMANAGER_SERVICE_NAME', 
                                'client_secret')
     aws_region = os.getenv('AWS_REGION')
 
-    if not aws_secret_id:
-        raise RuntimeError('AWS_SECRETSMANAGER_SECRET_ID is required')
+    if not aws_secret_name:
+        raise RuntimeError('AWS_SECRETSMANAGER_SECRET_NAME is required')
+    if not aws_service_name:
+        raise RuntimeError('AWS_SECRETSMANAGER_SERVICE_NAME is required')
+    if not aws_region:
+        raise RuntimeError('AWS_REGION is required')
 
     try:
         import boto3  # type: ignore
         client = boto3.client('secretsmanager', region_name=aws_region)  # type: ignore
-        response = cast(dict[str, Any], client.get_secret_value(SecretId=aws_secret_id))  # type: ignore
+        response = cast(dict[str, Any], client.get_secret_value(SecretId=aws_secret_name))  # type: ignore
     except ImportError as exc:
         raise RuntimeError('boto3 is required to fetch secrets from AWS Secrets Manager') from exc
     except Exception as exc:
@@ -77,13 +81,13 @@ def _get_client_secret() -> str:
 
     typed_payload = cast(dict[str, Any], secret_payload)
 
-    secret_value_obj = typed_payload.get(aws_secret_key)
+    secret_value_obj = typed_payload.get(aws_service_name)
     if not isinstance(secret_value_obj, str):
-        raise RuntimeError(f"AWS secret JSON missing '{aws_secret_key}' field")
+        raise RuntimeError(f"AWS secret JSON missing '{aws_service_name}' field")
 
     secret_value = secret_value_obj.strip()
     if not secret_value:
-        raise RuntimeError(f"AWS secret JSON missing '{aws_secret_key}' field")
+        raise RuntimeError(f"AWS secret JSON missing '{aws_service_name}' field")
     return secret_value
 
 

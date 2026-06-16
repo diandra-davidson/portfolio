@@ -49,6 +49,7 @@ check_oauth_redirect() {
   local url="${BASE_URL%/}/fetch/github_metadata"
   local headers
   local status_line
+  local status_code
   local location
 
   if ! headers="$(curl -sSI "$url")"; then

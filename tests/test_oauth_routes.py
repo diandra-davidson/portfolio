@@ -39,7 +39,6 @@ def _mock_aws_secret(
     class FakeSession:
         def client(self, service_name: str, region_name: str | None = None) -> FakeSecretsManagerClient:
             return fake_boto3_client(service_name, region_name)
-         
     class FakeBoto3:
         class session:
             Session = FakeSession

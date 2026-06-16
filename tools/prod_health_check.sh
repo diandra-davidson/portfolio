@@ -18,7 +18,7 @@ print_fail() {
 check_health() {
   local url="${BASE_URL%/}/nginx-health"
   local body
-  if ! body="$(curl -fsS "$url")"; then
+  if ! body="$(curl --connect-timeout 5 --max-time 10 -fsS "$url")"; then
     print_fail "NGINX health endpoint unreachable: $url"
     return
   fi
@@ -33,7 +33,7 @@ check_health() {
 check_home() {
   local url="${BASE_URL%/}/"
   local code
-  if ! code="$(curl -sS -o /dev/null -w "%{http_code}" "$url")"; then
+  if ! code="$(curl --connect-timeout 5 --max-time 10 -sS -o /dev/null -w "%{http_code}" "$url")"; then
     print_fail "Home page unreachable: $url"
     return
   fi
@@ -52,7 +52,7 @@ check_oauth_redirect() {
   local status_code
   local location
 
-  if ! headers="$(curl -sSI "$url")"; then
+  if ! headers="$(curl --connect-timeout 5 --max-time 10 -sSI "$url")"; then
     print_fail "OAuth start endpoint unreachable: $url"
     return
   fi

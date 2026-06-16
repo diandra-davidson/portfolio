@@ -10,15 +10,18 @@ services:
     env_file:
       - .env
     environment:
-      AUTHORIZATION_BASE_URL: ${AUTHORIZATION_BASE_URL:?set on host}
-      AWS_REGION: ${AWS_REGION:?set on host}
+      AUTHORIZATION_URL: ${AUTHORIZATION_URL:?set on host}
+      AWS_SECRETSMANAGER_REGION: ${AWS_SECRETSMANAGER_REGION:?set on host}
       AWS_SECRETSMANAGER_SECRET_NAME: ${AWS_SECRETSMANAGER_SECRET_NAME:?set on host}
       AWS_SECRETSMANAGER_SERVICE_NAME: ${AWS_SECRETSMANAGER_SERVICE_NAME:-client_secret}
+      AWS_SECRETSMANAGER_FLASK_REGION: ${AWS_SECRETSMANAGER_FLASK_REGION:?set on host}
+      AWS_SECRETSMANAGER_FLASK_SECRET_NAME: ${AWS_SECRETSMANAGER_FLASK_SECRET_NAME:?set on host}
+      AWS_SECRETSMANAGER_FLASK_SERVICE_NAME: ${AWS_SECRETSMANAGER_FLASK_SERVICE_NAME:-flask_secret}
       CALLBACK_URL: ${CALLBACK_URL:?set on host}
       CLIENT_ID: ${CLIENT_ID:?set on host}
       COOKIE_SAME_SITE: ${COOKIE_SAMESITE:?set on host}
       COOKIE_SECURE: ${COOKIE_SECURE:?set on host}
-      SCOPES: ${SCOPES:?set on host}
+      SCOPE: ${SCOPE:?set on host}
       TOKEN_URL: ${TOKEN_URL:?set on host}
     volumes:
       - .:/app

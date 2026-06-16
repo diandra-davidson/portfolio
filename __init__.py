@@ -35,7 +35,7 @@ def _get_secret_from_aws(secret_name: str, payload_key: str, aws_region: str) ->
     if not payload_key:
         raise RuntimeError('AWS_SECRETSMANAGER_SERVICE_NAME is required')
     if not aws_region:
-        raise RuntimeError('AWS region is required')
+        raise RuntimeError('AWS_SECRETSMANAGER_REGION is required')
 
     try:
         import boto3  # type: ignore
@@ -129,7 +129,7 @@ def _get_client_secret() -> str:
     if not secret_name:
         raise RuntimeError('AWS_SECRETSMANAGER_SECRET_NAME is required')
     if not region:
-        raise RuntimeError('AWS_REGION or AWS_SECRETSMANAGER_REGION is required')
+        raise RuntimeError('AWS_SECRETSMANAGER_REGION is required')
 
     return _get_secret_from_aws(
         secret_name,

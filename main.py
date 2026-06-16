@@ -188,7 +188,6 @@ async def oauth_callback() -> ResponseReturnValue:
                     "Token endpoint returned an error",
                     extra={
                         "status_code": token_response.status_code,
-                        "response_text": token_response.text,
                         "request_host": request.host,
                     },
                 )
@@ -201,7 +200,6 @@ async def oauth_callback() -> ResponseReturnValue:
                     "Token endpoint returned invalid JSON",
                     extra={
                         "status_code": token_response.status_code,
-                        "response_text": token_response.text,
                         "request_host": request.host,
                     },
                 )
@@ -249,7 +247,6 @@ async def oauth_callback() -> ResponseReturnValue:
                     "GitHub user endpoint returned invalid JSON",
                     extra={
                         "status_code": github_response.status_code,
-                        "response_text": github_response.text,
                         "request_host": request.host,
                     },
                 )
@@ -275,7 +272,6 @@ async def oauth_callback() -> ResponseReturnValue:
             "GitHub user endpoint returned HTTP error",
             extra={
                 "status_code": exc.response.status_code,
-                "response_text": exc.response.text,
                 "request_host": request.host,
             },
         )

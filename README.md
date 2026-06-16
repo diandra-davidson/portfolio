@@ -47,17 +47,20 @@ The AI assistant:
 **Stack:**
 - Backend: Flask 3.1.3 (Python 3.12+)
 - Frontend: Bootstrap 5 with custom CSS
-- Authentication: GitHub OAuth
+- Authentication: GitHub OAuth2
 - Server: Gunicorn WSGI
 - Proxy: NGINX
 - Containers: Docker + Docker Compose
+- Secrets: AWS Secrets Manager
 - Hosting: Digital Ocean Droplet
 
 **Security:**
-- Docker secrets for sensitive data
-- Keyring for credential management
-- OAuth state tokens for CSRF protection
-- Environment variable configuration
+- **AWS Secrets Manager** for secure credential storage (no env vars in code)
+- **OAuth state tokens** for CSRF protection (validated first before any provider processing)
+- **Host normalization** for safe redirect URI selection (prevents host-header injection)
+- **Upstream error handling** (502 responses for httpx/JSON failures, prevents information leakage)
+- **Validated configuration** (all required values checked before app startup)
+- Environment variable configuration with fallback patterns
 
 ## 📁 Project Structure
 
@@ -128,23 +131,41 @@ portfolio/
    ```
 
 3. **Set up environment variables:**
+
+   **Option A: Environment variables (dev/testing)**
    ```bash
    # Create .env file with:
    FLASK_SECRET_KEY=your_long_random_flask_secret_key
    CLIENT_ID=your_github_oauth_client_id
    AWS_REGION=your_aws_region
    AWS_SECRETSMANAGER_SECRET_NAME=your_aws_secret_name
-   AWS_SECRETSMANAGER_SERVICE_NAME=your_service_name
+   AWS_SECRETSMANAGER_SERVICE_NAME=client_secret
    SCOPE="read:user user:email"
    AUTHORIZATION_URL=https://github.com/login/oauth/authorize
    CALLBACK_URL=http://localhost:8000/oauth/callback
    TOKEN_URL=https://github.com/login/oauth/access_token
    ```
 
-   Notes:
-   - If `FLASK_SECRET_KEY` is not set, the app generates a random key at startup.
-   - A generated key is acceptable for local testing, but sessions and OAuth state cookies become invalid when the process restarts.
-   - Set `FLASK_SECRET_KEY` explicitly for stable sessions, especially in production.
+   **Option B: AWS Secrets Manager (dev/testing)**
+   ```bash
+   # Create .env file with:
+   CLIENT_ID=your_github_oauth_client_id
+   AWS_SECRETSMANAGER_SECRET_NAME=your_github_secret_id
+   AWS_SECRETSMANAGER_SERVICE_NAME=client_secret
+   AWS_SECRETSMANAGER_REGION=your_aws_region
+   AWS_SECRETSMANAGER_FLASK_SECRET_NAME=your_flask_secret_id
+   AWS_SECRETSMANAGER_FLASK_SERVICE_NAME=secretsmanager
+   AWS_SECRETSMANAGER_FLASK_REGION=your_aws_region
+   SCOPE="read:user user:email"
+   AUTHORIZATION_URL=https://github.com/login/oauth/authorize
+   CALLBACK_URL=http://localhost:8000/oauth/callback
+   TOKEN_URL=https://github.com/login/oauth/access_token
+   ```
+
+   **Flask Secret Key Resolution (priority order):**
+   1. `FLASK_SECRET_KEY` env var (explicit override)
+   2. `AWS_SECRETSMANAGER_FLASK_*` trio (if all three are set)
+   3. Generated random key (development fallback - sessions invalidate on restart)
 
 4. **Run development server:**
    ```bash
@@ -187,12 +208,19 @@ portfolio/
 
 3. **Configure host environment variables** on the Digital Ocean droplet (do not commit these):
    ```bash
-   export FLASK_SECRET_KEY=your_stable_flask_secret_key
    export AWS_ACCESS_KEY_ID=your_aws_access_key_id
    export AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
-   export AWS_REGION=your_aws_region
+   export CLIENT_ID=your_github_oauth_client_id
    export AWS_SECRETSMANAGER_SECRET_NAME=portfolio/github/oauth
+   export AWS_SECRETSMANAGER_REGION=us-east-1
    export AWS_SECRETSMANAGER_SERVICE_NAME=client_secret
+   export AWS_SECRETSMANAGER_FLASK_SECRET_NAME=prod/portfolio.diandrad.dev/flask_secret_key
+   export AWS_SECRETSMANAGER_FLASK_SERVICE_NAME=secretsmanager
+   export AWS_SECRETSMANAGER_FLASK_REGION=us-east-1
+   export SCOPE="read:user user:email"
+   export AUTHORIZATION_URL=https://github.com/login/oauth/authorize
+   export CALLBACK_URL=https://portfolio.diandrad.dev/oauth/callback
+   export TOKEN_URL=https://github.com/login/oauth/access_token
    ```
 
 4. **Deploy with Docker Compose:**
@@ -204,16 +232,28 @@ portfolio/
 
 ### Environment Variables
 
-Required for production:
-- `FLASK_SECRET_KEY`: stable secret for Flask session and CSRF state cookies
+**Required (OAuth/GitHub):**
 - `CLIENT_ID`: GitHub OAuth App Client ID
-- `AWS_REGION`: your_aws_region
-- `AWS_SECRETSMANAGER_SECRET_NAME`: your_aws_secret_name
-- `AWS_SECRETSMANAGER_SERVICE_NAME`: your_service_name
-- `SCOPE`: OAuth permissions (read:user user:email)
-- `AUTHORIZATION_URL`: GitHub OAuth URL
-- `CALLBACK_URL`: Your domain callback URL
-- `TOKEN_URL`: GitHub token exchange URL
+- `AWS_SECRETSMANAGER_SECRET_NAME`: AWS Secrets Manager ID for GitHub OAuth secret
+- `AWS_SECRETSMANAGER_REGION`: AWS region for GitHub secrets
+- `AWS_SECRETSMANAGER_SERVICE_NAME`: JSON field name in GitHub secret (default: `client_secret`)
+- `SCOPE`: OAuth permissions (default: `read:user user:email`)
+- `AUTHORIZATION_URL`: GitHub OAuth authorization endpoint
+- `TOKEN_URL`: GitHub token exchange endpoint
+- `CALLBACK_URL`: OAuth callback URL (e.g., `https://yourdomain.com/oauth/callback`)
+
+**Flask Secret (choose one):**
+- `FLASK_SECRET_KEY`: Explicit Flask secret key (overrides AWS)
+- **OR** all three of:
+  - `AWS_SECRETSMANAGER_FLASK_SECRET_NAME`: AWS Secrets Manager ID for Flask secret
+  - `AWS_SECRETSMANAGER_FLASK_SERVICE_NAME`: JSON field name in Flask secret (default: `secretsmanager`)
+  - `AWS_SECRETSMANAGER_FLASK_REGION`: AWS region for Flask secret
+
+**Optional:**
+- `CALLBACK_URL_DEV`: Callback URL for dev host matching
+- `CALLBACK_URL_PROD`: Callback URL for prod host matching
+- `COOKIE_SECURE`: Set Flask cookie security flag (default: True)
+- `COOKIE_SAMESITE`: Flask SameSite cookie setting (default: Lax)
 
 ## 📝 Development Workflow
 
@@ -307,14 +347,17 @@ chmod +x .git/hooks/post-commit
 - ✅ Bootstrap 5 integration and custom styling
 - ✅ Hero section with profile and social links
 - ✅ Project highlights carousel (static content)
-- ✅ Docker containerization
+- ✅ Docker containerization (dev & production)
 - ✅ NGINX reverse proxy configuration
-- ✅ OAuth flow initialization
+- ✅ **Full OAuth2 flow** (GitHub authorization, token exchange, CSRF protection)
+- ✅ **AWS Secrets Manager integration** (GitHub & Flask secrets)
+- ✅ **Security hardening** (state-first CSRF validation, upstream error handling, host-trust fixes)
+- ✅ **Comprehensive test suite** (13 tests, AWS mocking, end-to-end validation)
 - ✅ AI assistant tracking system
 
 **In Progress:**
-- 🔄 Complete OAuth callback implementation
 - 🔄 Dynamic GitHub project loading via API
+- 🔄 Metadata display template (`github_metadata.html`)
 
 **Planned:**
 - ⏳ Services page content and layout
@@ -323,6 +366,7 @@ chmod +x .git/hooks/post-commit
 - ⏳ About page content expansion
 - ⏳ Production deployment to Digital Ocean
 - ⏳ Domain configuration and SSL setup
+- ⏳ CI/CD pipeline with GitHub Actions
 
 See [memories/repo/development-log.md](memories/repo/development-log.md) for detailed progress tracking.
 
@@ -355,6 +399,28 @@ python tools/track_changes.py summary
 📖 **Complete Guide**: [tools/AI_ASSISTANT_GUIDE.md](tools/AI_ASSISTANT_GUIDE.md)
 
 ## 🔍 Testing
+
+### Automated Testing
+```bash
+# Run full test suite
+pytest -q
+
+# Run only OAuth route tests
+pytest -q tests/test_oauth_routes.py
+
+# Run with verbose output
+pytest tests/test_oauth_routes.py -v
+```
+
+**Test Coverage:**
+- OAuth authorization URL generation
+- State parameter CSRF validation (tested first)
+- Provider error handling
+- Token endpoint failure scenarios
+- GitHub API error handling
+- Missing/invalid configuration detection
+- AWS Secrets Manager integration
+- 13 tests total, all passing
 
 ### Manual Testing
 ```bash
@@ -408,16 +474,17 @@ docker-compose down
 - Reinstall dependencies: `pip install -r requirements.txt`
 - Check Python version: `python --version` (should be 3.12+)
 
-## 🚧 Technical Debt
+## 🚧 Technical Debt & Future Improvements
 
 Current items requiring attention:
-1. Complete OAuth callback token exchange (main.py line 92+)
-2. Implement remaining page templates (services, experience, contact)
-3. Add error handling for GitHub API calls
-4. Implement rate limiting for API requests
-5. Add comprehensive logging
-6. Set up monitoring for production
-7. Add automated tests
+1. Implement GitHub metadata display template (`github_metadata.html`)
+2. Add pagination for GitHub project loading
+3. Implement remaining page templates (services, experience, contact)
+4. Add GitHub API rate-limit handling
+5. Expand logging for production observability
+6. Set up monitoring and alerting for production
+7. Add integration tests for full user flows
+8. Implement caching strategy for GitHub API responses
 
 ## 📝 Contributing
 

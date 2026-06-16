@@ -28,5 +28,5 @@ health:
 
 health-dev:
 	./tools/prod_health_check.sh \
-		${BASE_URL_DEV:-http://127.0.0.1} \
-		${CALLBACK_URL_DEV:-http://127.0.0.1/oauth/callback}
+		"$${BASE_URL_DEV:-http://127.0.0.1}" \
+		"$${CALLBACK_URL_DEV:-http://127.0.0.1/oauth/callback}"

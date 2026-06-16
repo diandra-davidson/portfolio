@@ -148,11 +148,13 @@ async def oauth_callback() -> ResponseReturnValue:
     state = request.args.get('state')
     oauth_error = request.args.get('error')
     oauth_error_description = request.args.get('error_description')
-    expected_state = session.pop('oauth_state', None)
+    expected_state = session.get('oauth_state')
 
     # Validate state parameter first (CSRF protection) before processing any other callback parameters.
     if not state or not expected_state or state != expected_state:
         return ("Invalid state parameter", 400) # type: ignore
+
+    session.pop('oauth_state', None)
 
     if oauth_error:
         LOGGER.warning(

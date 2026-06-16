@@ -55,7 +55,7 @@ The AI assistant:
 - Hosting: Digital Ocean Droplet
 
 **Security:**
-- **AWS Secrets Manager** for secure credential storage (no env vars in code)
+- **AWS Secrets Manager** for secure credential storage
 - **OAuth state tokens** for CSRF protection (validated first before any provider processing)
 - **Host normalization** for safe redirect URI selection (prevents host-header injection)
 - **Upstream error handling** (502 responses for httpx/JSON failures, prevents information leakage)

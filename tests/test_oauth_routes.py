@@ -48,8 +48,8 @@ def _build_test_app(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Flask:
         expected_region=TEST_AWS_REGION,
     )
 
-    monkeypatch.setenv("AWS_SECRETSMANAGER_SECRET_ID", TEST_AWS_SECRET_ID)
-    monkeypatch.setenv("AWS_SECRETSMANAGER_SECRET_KEY", "client_secret")
+    monkeypatch.setenv("AWS_SECRETSMANAGER_SECRET_NAME", TEST_AWS_SECRET_ID)
+    monkeypatch.setenv("AWS_SECRETSMANAGER_SERVICE_NAME", "client_secret")
     monkeypatch.setenv("AWS_REGION", TEST_AWS_REGION)
     monkeypatch.delenv("CALLBACK_URL", raising=False)
     monkeypatch.delenv("CALLBACK_URL_DEV", raising=False)
@@ -274,8 +274,11 @@ def test_callback_hides_provider_error_details(
     caplog.set_level("WARNING", logger="main")
 
     with app.test_client() as client:
+        with client.session_transaction() as session:
+            session["oauth_state"] = "expected-state"
+
         response = client.get(
-            "/oauth/callback?error=access_denied&error_description=<script>alert(1)</script>",
+            "/oauth/callback?error=access_denied&error_description=<script>alert(1)</script>&state=expected-state",
         )
 
     assert response.status_code == 400

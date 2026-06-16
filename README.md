@@ -182,8 +182,8 @@ portfolio/
 3. **Configure host environment variables** on the Digital Ocean droplet (do not commit these):
    ```bash
    export AWS_REGION=your_aws_region
-   export AWS_SECRETSMANAGER_SECRET_ID=portfolio/github/oauth
-   export AWS_SECRETSMANAGER_SECRET_KEY=client_secret
+   export AWS_SECRETSMANAGER_SECRET_NAME=portfolio/github/oauth
+   export AWS_SECRETSMANAGER_SERVICE_NAME=client_secret
    ```
 
 4. **Deploy with Docker Compose:**

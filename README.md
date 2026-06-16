@@ -94,13 +94,10 @@ portfolio/
 │   ├── about.html               # About page
 │   └── explore.html             # Additional template
 │
-├── static/                      # Static assets
-│   ├── css/
-│   │   └── style.css            # Custom styles
-│   └── images/                  # Profile images
-│
-└── secrets/                     # Sensitive data (gitignored)
-    └── client_secret.txt        # GitHub OAuth secret
+└── static/                      # Static assets
+    ├── css/
+    │   └── style.css            # Custom styles
+    └── images/                  # Profile images
 ```
 
 ## Getting Started
@@ -134,16 +131,13 @@ portfolio/
    ```bash
    # Create .env file with:
    CLIENT_ID=your_github_oauth_client_id
-   AWS_REGION=us-east-1
-   AWS_SECRETSMANAGER_SECRET_ID=portfolio/github/oauth
-   # Optional when secret value is JSON; defaults to 'client_secret'
-   AWS_SECRETSMANAGER_SECRET_KEY=client_secret
-   SCOPE=read:user,repo
+   AWS_REGION=your_aws_region
+   AWS_SECRETSMANAGER_SECRET_NAME=your_aws_secret_name
+   AWS_SECRETSMANAGER_SERVICE_NAME=your_service_name
+   SCOPE="read:user user:email"
    AUTHORIZATION_URL=https://github.com/login/oauth/authorize
    CALLBACK_URL=http://localhost:8000/oauth/callback
    TOKEN_URL=https://github.com/login/oauth/access_token
-   KEYRING_SERVICE=portfolio_app
-   KEYRING_USERNAME=github_oauth
    ```
 
 4. **Run development server:**
@@ -187,7 +181,7 @@ portfolio/
 
 3. **Configure host environment variables** on the Digital Ocean droplet (do not commit these):
    ```bash
-   export AWS_REGION=us-east-1
+   export AWS_REGION=your_aws_region
    export AWS_SECRETSMANAGER_SECRET_ID=portfolio/github/oauth
    export AWS_SECRETSMANAGER_SECRET_KEY=client_secret
    ```
@@ -203,15 +197,13 @@ portfolio/
 
 Required for production:
 - `CLIENT_ID`: GitHub OAuth App Client ID
-- `AWS_REGION`: AWS region for Secrets Manager
-- `AWS_SECRETSMANAGER_SECRET_ID`: Secret identifier in AWS Secrets Manager
-- `AWS_SECRETSMANAGER_SECRET_KEY`: JSON key to read from secret payload (default: `client_secret`)
-- `SCOPE`: OAuth permissions (read:user,repo)
+- `AWS_REGION`: your_aws_region
+- `AWS_SECRETSMANAGER_SECRET_NAME`: your_aws_secret_name
+- `AWS_SECRETSMANAGER_SERVICE_NAME`: your_service_name
+- `SCOPE`: OAuth permissions (read:user user:email)
 - `AUTHORIZATION_URL`: GitHub OAuth URL
 - `CALLBACK_URL`: Your domain callback URL
 - `TOKEN_URL`: GitHub token exchange URL
-- `KEYRING_SERVICE`: Service name for keyring
-- `KEYRING_USERNAME`: Username for keyring
 
 ## 📝 Development Workflow
 
@@ -275,37 +267,6 @@ Install post-commit hook to auto-update development log:
 ln -s ../../tools/git-hooks/post-commit .git/hooks/post-commit
 chmod +x .git/hooks/post-commit
 ```
-
-## 🔒 keyring-pass Setup
-
-If `keyring` falls back to `keyring.backends.fail.Keyring`, the `pass` CLI is usually missing or not initialized.
-
-1. **Install system dependencies:**
-   ```bash
-   sudo apt-get update
-   sudo apt-get install -y pass gnupg
-   ```
-
-2. **Install Python packages:**
-   ```bash
-   pip install keyring keyring-pass
-   ```
-
-3. **Create or use a GPG key and initialize `pass`:**
-   ```bash
-   gpg --full-generate-key
-   gpg --list-secret-keys --keyid-format LONG
-   pass init <YOUR_GPG_KEY_ID>
-   ```
-
-4. **Verify backend discovery:**
-   ```bash
-   python -c "import keyring; print(keyring.get_keyring())"
-   ```
-
-   Expected output should reference `keyring_pass.PasswordStoreBackend` (or another non-fail backend).
-
-📖 **Detailed Setup**: See [memories/repo/keyring.md](memories/repo/keyring.md)
 
 ## 🎨 Key Features
 
@@ -472,6 +433,6 @@ For opportunities or consulting inquiries:
 
 ---
 
-**Last Updated**: June 10, 2026
+**Last Updated**: June 16, 2026
 **Project Status**: Active Development
 **AI Assistant**: Enabled ✅

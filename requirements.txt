@@ -25,7 +25,7 @@ Jinja2==3.1.6
 keyring==25.7.0
 keyring-pass==0.9.3
 MarkupSafe==3.0.3
-more-itertools==11.0.2
+more-itertools==11.1.0
 packaging==26.2
 pycparser==3.0
 PyJWT==2.13.0
